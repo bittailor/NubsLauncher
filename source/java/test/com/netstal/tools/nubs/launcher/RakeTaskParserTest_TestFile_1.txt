@@ -1,0 +1,16 @@
+(in /Users/gekko/Documents/code/jNetstal/NubsCockpit/source/rake/src)
+rake ProjectOne
+    ProjectOne_generate
+    ProjectOne_build_ipc_only
+rake ProjectOne_build_ipc_only
+rake ProjectOne_generate
+rake ProjectTwo
+    ProjectTwo_generate
+    ProjectTwo_build_ipc_only
+    ProjectTwo_build_dpu_only
+rake ProjectTwo_build_dpu_only
+rake ProjectTwo_build_ipc_only
+rake ProjectTwo_generate
+rake default
+    ProjectOne
+    ProjectTwo

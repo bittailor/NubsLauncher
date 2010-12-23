@@ -1,0 +1,24 @@
+Rake.application.options.trace = true
+
+# -----------------------------------------------------------------------
+
+task :ProjectOne_generate
+task :ProjectOne_build_ipc_only
+task :ProjectOne => [:ProjectOne_generate,:ProjectOne_build_ipc_only]
+
+# -----------------------------------------------------------------------
+
+task task :default => [:ProjectOne]
+
+task :ProjectTwo_generate
+task :ProjectTwo_build_ipc_only
+task :ProjectTwo_build_dpu_only
+task :ProjectTwo => [:ProjectTwo_generate,:ProjectTwo_build_ipc_only,:ProjectTwo_build_dpu_only]
+
+task task :default => [:ProjectTwo]
+
+# -----------------------------------------------------------------------
+
+task :Application_generate
+task :Application_deploy
+

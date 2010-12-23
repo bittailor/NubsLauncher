@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="NubsLauncher" default="deploy" basedir=".">
+
+	<!-- set global properties for this build -->
+
+	<property name="lib" location="lib" />
+	<property name="lib.compile" location="lib/compile" />
+	<property name="lib.test" location="lib/test" />
+
+	<property name="source" location="source/java" />
+	<property name="source.src" location="${source}/src" />
+	<property name="source.test" location="${source}/test" />
+
+	<property name="target" location="target/java" />
+	<property name="target.classes.src" location="${target}/build/src" />
+	<property name="target.classes.test" location="${target}/build/test" />
+
+	<property name="target.unittest" location="${target}/build/unittest" />
+
+	<property name="target.dist" location="${target}/build/dist" />
+
+
+	<path id="path.libraries.src">
+		<fileset dir="${lib.compile}">
+		   <include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="path.libraries.test">
+		<fileset dir="${lib.test}">
+		   <include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean" description="clean up">
+		<delete dir="${target}/build" />
+	</target>
+
+	<target name="compile" depends="clean" description="compile everything">
+		<mkdir dir="${target.classes.src}" />
+		<mkdir dir="${target.classes.test}" />
+
+		<!-- compile sources -->
+		<javac debug="true" srcdir="${source.src}" destdir="${target.classes.src}">
+			<classpath>
+				<path refid="path.libraries.src" />
+			</classpath>
+		</javac>
+		<!-- copy resources -->
+		<copy todir="${target.classes.src}">
+			<fileset dir="${source.src}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<!-- compile tests -->
+		<javac debug="true" srcdir="${source.test}" destdir="${target.classes.test}">
+			<classpath>
+				<pathelement path="${target.classes.src}" />
+				<path refid="path.libraries.src" />
+				<path refid="path.libraries.test" />
+			</classpath>
+		</javac>
+		<!-- copy test resources -->
+		<copy todir="${target.classes.test}">
+			<fileset dir="${source.test}">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+	</target>
+
+	<target name="unittest" depends="compile">
+		<mkdir dir="${target.unittest}" />
+
+		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="test.failed">
+			<classpath>
+				<pathelement path="${target.classes.src}" />
+				<pathelement path="${target.classes.test}" />
+				<path refid="path.libraries.src" />
+				<path refid="path.libraries.test" />
+			</classpath>
+			<batchtest todir="${target.unittest}">
+				<fileset dir="${source.test}">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+			<formatter type="xml" />
+		</junit>
+
+		<junitreport todir="${target.unittest}">
+			<fileset dir="${target.unittest}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${target.unittest}/html" />
+		</junitreport>
+
+		<fail if="test.failed">
+		   Failures in unittests.
+		</fail>
+	</target>
+
+	<target name="deploy" depends="unittest,compile" description="generate the distribution">
+		<mkdir dir="${target.dist}" />
+		<jar destfile="${target.dist}/NubsLauncher.jar">
+		   <manifest>
+		      <attribute name="Built-By" value="Bittailor.ch"/>
+		      <attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher"/>
+		      <attribute name="Class-Path" value="."/>
+		   </manifest>
+		   <fileset dir="${target.classes.src}"/>
+		   <zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar"/>
+		   <zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar"/>
+		</jar>
+	</target>
+</project>
