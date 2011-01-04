@@ -21,7 +21,9 @@
    
    <property name="deliver.dir" location="s:/Gruppe/TE/Verwaltung/Tools/NUBSLauncher" />
    
-   <property name="launch4j.dir" location="c:/Programme/Launch4j" />
+   
+   
+   <property name="launch4j.dir" location="c:/Programme/Launch4j" />  
    <available file="${launch4j.dir}" type="dir" property="launch4j.present" />
   
 
@@ -39,6 +41,15 @@
 
 	<target name="clean" description="clean up">
 		<delete dir="${target}/build" />
+	</target>
+   
+   <target name="revision" depends="clean"  description=" ">
+		<mkdir dir="${target}/build" />
+      <exec executable="svn" output="${target}/build/svn.properties">
+         <arg value="info" />
+      </exec>
+      <property prefix="svn" file="${target}/build/svn.properties"/>
+      <echo>Sandbox Revision: ${svn.Revision}</echo>
 	</target>
 
 	<target name="compile" depends="clean" description="compile everything">
