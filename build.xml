@@ -18,7 +18,10 @@
 	<property name="target.unittest" location="${target}/build/unittest" />
 
 	<property name="target.dist" location="${target}/build/dist" />
-
+   
+   <property name="launch4j.dir" location="c:/Programme/Launch4j" />
+   <available file="${launch4j.dir}" type="dir" property="launch4j.present" />
+  
 
 	<path id="path.libraries.src">
 		<fileset dir="${lib.compile}">
@@ -113,4 +116,12 @@
 		   <zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar"/>
 		</jar>
 	</target>
+   
+   <target name="exe" depends="deploy" if="launch4j.present" description="generate the executable">
+      <taskdef  name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+      <launch4j configFile="source/launch4j/NubsLauncher.xml" jarPath="${target.dist}/NubsLauncher.jar" outfile="${target.dist}/nubs.exe" />
+   </target>
+
+   
+   
 </project>
