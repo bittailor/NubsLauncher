@@ -21,9 +21,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
+import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.infrastructure.CmdLauncher;
@@ -58,12 +60,22 @@ public class NubsLauncherFrame extends JFrame {
       this.filterChain = filterChain;
       createUi();
       createActions();
+      this.workspace.addListener(new IEventListener<IWorkspace>() {
+         @Override
+         public void notify(IWorkspace source) {
+            SwingUtilities.invokeLater(new Runnable() {
+               @Override
+               public void run() {
+                  notifyWorkspaceChanged();
+               }
+            });
+         }
+      });
       pack();
    }
 
-
-   public void setWorkspaceDirectory(final File workspaceDirectory) {
-      changeTitle(workspaceDirectory);     
+   public void changeWorkspace(final File workspaceDirectory) {
+      setFrameInfo("loading ...");
       changeLayer(LOAD_LAYER);
       SwingWorker<Void,Void> worker = new SwingWorker<Void, Void>() {
 
@@ -76,7 +88,6 @@ public class NubsLauncherFrame extends JFrame {
          @Override
          protected void done() {
             changeLayer(MAIN_LAYER);            
-            updateLables();
          }
       };
       worker.execute();
@@ -144,15 +155,16 @@ public class NubsLauncherFrame extends JFrame {
       layersLayout.show(layersPanel,layer);
    }
    
-   private void updateLables() {
+   private void notifyWorkspaceChanged() {
       tasksLabel.setText(workspace.getTasks().size() +" Tasks @ ");
       workspaceLabel.setText(workspace.getRoot() + "  ");
+      setFrameInfo(workspace.getRoot().getName());
    }
    
-   private void changeTitle(File workspaceDirectory) {
-      setTitle(PREFIX + workspaceDirectory.getName());
+   private void setFrameInfo(String info) {
+      setTitle(PREFIX + info);
    }
-   
+    
    private class RunRakeAction extends AbstractAction {
 
       private static final long serialVersionUID = 1L;
@@ -174,17 +186,6 @@ public class NubsLauncherFrame extends JFrame {
          catch (IOException exception) {
             exception.printStackTrace();
          }
-         
-         /*
-         ProcessBuilder execute = new ProcessBuilder("cmd","/C","start","cmd","/K","\"rake "+suggestField.getText()+"\"");
-         execute.directory(workspace.getRoot());
-         try {
-            execute.start();
-         }
-         catch (IOException exception) {
-            exception.printStackTrace();
-         }
-         */
       }     
    }
    
@@ -205,7 +206,7 @@ public class NubsLauncherFrame extends JFrame {
       public void actionPerformed(ActionEvent e) {
          fileChooser.setSelectedFile(workspace.getRoot());
          if (fileChooser.showOpenDialog(NubsLauncherFrame.this)==JFileChooser.APPROVE_OPTION) {
-            setWorkspaceDirectory(fileChooser.getSelectedFile());
+            changeWorkspace(fileChooser.getSelectedFile());
          }
       }     
    }
@@ -220,7 +221,7 @@ public class NubsLauncherFrame extends JFrame {
       
       @Override
       public void actionPerformed(ActionEvent e) {
-         setWorkspaceDirectory(workspace.getRoot());
+         changeWorkspace(workspace.getRoot());
       }     
    }
    

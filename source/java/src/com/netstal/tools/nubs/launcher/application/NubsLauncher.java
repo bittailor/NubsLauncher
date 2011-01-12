@@ -24,19 +24,16 @@ public class NubsLauncher {
 
    public NubsLauncher() {
       Injector injector = createInjector();
-      NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);
+      String userDirectory = System.getProperty("user.dir");
+      NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);      
       mainFrame.setVisible(true);
-      File workingDirectory = new File(System.getProperty("user.dir"));
-      System.out.println(workingDirectory);
-      if(new File(workingDirectory,"rakefile").exists()) {
-         mainFrame.setWorkspaceDirectory(workingDirectory);
+      if(new File(userDirectory,"rakefile").exists()) {
+         mainFrame.changeWorkspace(new File(userDirectory));
       } else {
          mainFrame.selectWorkspaceDirectory();
-      }
-      
-      
+      }   
    }
-
+   
    private Injector createInjector() {
       Injector injector = Guice.createInjector(new AbstractModule(){
          @Override

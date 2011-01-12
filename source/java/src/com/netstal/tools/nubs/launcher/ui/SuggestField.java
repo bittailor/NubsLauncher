@@ -18,9 +18,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 public class SuggestField extends JPanel {
    
@@ -142,14 +144,28 @@ public class SuggestField extends JPanel {
          public void actionPerformed(ActionEvent event) {
             if (suggestPopup.isVisible()) {
                closeSuggestPopup();
-               int offset = getStartIndexOfLastWord();
+
+               if (suggestList.isSelectionEmpty()) {
+                  return;
+               }
+               
                String selection = suggestList.getSelectedValue().toString(); 
-               suggestTextField.setText(suggestTextField.getText().substring(0, offset+1) + selection + " " );   
+               int offset = getStartIndexOfSuggestWord();
+               int length = getEndIndexOfSuggestWord() - offset;
+               try {
+                  Document document = suggestTextField.getDocument();
+                  document.remove(offset,length);
+                  document.insertString(offset, selection, null);
+                  offset = offset + selection.length();
+                  if(!(document.getLength() > offset && document.getText(offset, 1).equals(" "))) {
+                     document.insertString(offset, " ", null);
+                  }
+               }
+               catch (BadLocationException e) {
+                  e.printStackTrace();
+               }
             } else {
                notifyActionListeners(event);
-               /*
-               
-               */
             }
          }
       });
@@ -161,23 +177,40 @@ public class SuggestField extends JPanel {
       suggestList.ensureIndexIsVisible(indexInBound);
    }
    
-   private String getLastWord() {
-      return suggestTextField.getText().substring(Math.max(0,getStartIndexOfLastWord()));
+   private String getSuggestWord() {
+      return suggestTextField.getText().substring(Math.max(0,getStartIndexOfSuggestWord()),getEndIndexOfSuggestWord());
    }
    
-   private int getStartIndexOfLastWord() {
-      return suggestTextField.getText().lastIndexOf(" ");
+   private int getStartIndexOfSuggestWord() {
+      int carret = getEndIndexOfSuggestWord();
+      String text = suggestTextField.getText();
+      for(int i = carret-1 ; i>=0 ; i--){
+         if(text.charAt(i)==' ') {
+            return i+1;
+         }
+      }
+      return 0;
+   }
+   
+   private int getEndIndexOfSuggestWord() {
+      return Math.min(suggestTextField.getText().length(), suggestTextField.getCaretPosition());
    }
    
    private void suggestTextChanged() {  
       if(suggestPopup.isVisible()) {
-         notiySuggestListeners();
+         SwingUtilities.invokeLater(new Runnable() {            
+            @Override
+            public void run() {
+               notiySuggestListeners();
+            }
+         });
       }
    }
  
    private void notiySuggestListeners() {
       for ( ISuggestFieldListener listener : suggestListeners) {
-         listener.changed(getLastWord() );
+         System.out.println(getSuggestWord());
+         listener.changed(getSuggestWord() );
       }
    }
    
