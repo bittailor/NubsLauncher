@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="NubsLauncher" default="deploy" basedir=".">
+<project name="NubsLauncher" default="build" basedir=".">
 
 	<!-- set global properties for this build -->
 
@@ -18,38 +18,40 @@
 	<property name="target.unittest" location="${target}/build/unittest" />
 
 	<property name="target.dist" location="${target}/build/dist" />
-   
-   <property name="deliver.dir" location="s:/Gruppe/TE/Verwaltung/Tools/NUBSLauncher" />
-   
-   
-   
-   <property name="launch4j.dir" location="c:/Programme/Launch4j" />  
-   <available file="${launch4j.dir}" type="dir" property="launch4j.present" />
-  
+
+	<property name="deliver.dir" location="s:/Gruppe/TE/Verwaltung/Tools/NUBSLauncher" />
+
+	<property name="launch4j.dir" location="c:/Programme/Launch4j" />
+	<available file="${launch4j.dir}" type="dir" property="launch4j.present" />
+
 
 	<path id="path.libraries.src">
 		<fileset dir="${lib.compile}">
-		   <include name="*.jar" />
+			<include name="*.jar" />
 		</fileset>
 	</path>
 
 	<path id="path.libraries.test">
 		<fileset dir="${lib.test}">
-		   <include name="*.jar" />
+			<include name="*.jar" />
 		</fileset>
 	</path>
 
+	<target name="revision">
+		<exec outputproperty="svn.revision" executable="svnversion">
+			<arg line="-n -c" />
+			<redirector>
+				<outputfilterchain>
+					<tokenfilter>
+						<replaceregex pattern="^[0-9]*:?" replace="" flags="g" />
+					</tokenfilter>
+				</outputfilterchain>
+			</redirector>
+		</exec>
+	</target>
+
 	<target name="clean" description="clean up">
 		<delete dir="${target}/build" />
-	</target>
-   
-   <target name="revision" depends="clean"  description=" ">
-		<mkdir dir="${target}/build" />
-      <exec executable="svn" output="${target}/build/svn.properties">
-         <arg value="info" />
-      </exec>
-      <property prefix="svn" file="${target}/build/svn.properties"/>
-      <echo>Sandbox Revision: ${svn.Revision}</echo>
 	</target>
 
 	<target name="compile" depends="clean" description="compile everything">
@@ -116,32 +118,34 @@
 		</fail>
 	</target>
 
-	<target name="deploy" depends="unittest,compile" description="generate the distribution">
+	<target name="build" depends="unittest,compile" description="generate the distribution"/>  
+	
+	<target name="release" depends="build,revision" description="generate the distribution">
 		<mkdir dir="${target.dist}" />
 		<jar destfile="${target.dist}/NubsLauncher.jar">
-		   <manifest>
-		      <attribute name="Built-By" value="Bittailor.ch"/>
-		      <attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher"/>
-		      <attribute name="Class-Path" value="."/>
-		   </manifest>
-		   <fileset dir="${target.classes.src}"/>
-		   <zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar"/>
-		   <zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar"/>
+			<manifest>
+				<attribute name="Built-By" value="Bittailor.ch"/>
+				<attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher"/>
+				<attribute name="Class-Path" value="."/>
+				<attribute name="Implementation-Version" value="${svn.revision}"/>
+			</manifest>
+			<fileset dir="${target.classes.src}"/>
+			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar"/>
 		</jar>
 	</target>
-   
-   <target name="exe" depends="deploy" description="generate the executable (depends on a lauch4j installation)">
-      <taskdef  name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-      <launch4j configFile="source/launch4j/NubsLauncher.xml" jarPath="${target.dist}/NubsLauncher.jar" outfile="${target.dist}/nubs.exe" />
-   </target>
-   
-   <target name="deliver" depends="exe" description="copy the executable to the tools folder">
-      <copy todir="${deliver.dir}">
+
+	<target name="exe" depends="release" description="generate the executable (depends on a lauch4j installation)">
+		<taskdef  name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+		<launch4j configFile="source/launch4j/NubsLauncher.xml" jarPath="${target.dist}/NubsLauncher.jar" outfile="${target.dist}/nubs.exe" />
+	</target>
+
+	<target name="deliver" depends="exe" description="copy the executable to the tools folder">
+		<copy todir="${deliver.dir}">
 			<fileset dir="${target.dist}">
 				<include name="*.exe" />
 			</fileset>
 		</copy>
-   </target>
+	</target>
 
-   
 </project>

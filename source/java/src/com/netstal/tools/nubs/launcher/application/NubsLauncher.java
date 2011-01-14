@@ -50,6 +50,10 @@ public class NubsLauncher {
    }
    
    public static void main(final String[] args) {
+      if(args.length==1 && args[0].equals("--version")) {
+         showVersion();
+         return;
+      }
       try {
          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       }
@@ -73,4 +77,14 @@ public class NubsLauncher {
          }
       });
    }
+
+   private static void showVersion() {
+      String implementationVersion = NubsLauncher.class.getPackage().getImplementationVersion();
+      if (implementationVersion == null) {
+         implementationVersion = "local build";
+      }
+      System.out.println(implementationVersion);   
+      return;
+   }
+   
 }
