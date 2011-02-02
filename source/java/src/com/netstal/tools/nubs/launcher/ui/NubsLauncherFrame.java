@@ -9,7 +9,6 @@ package com.netstal.tools.nubs.launcher.ui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -25,10 +24,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
+import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
-import com.netstal.tools.nubs.launcher.infrastructure.CmdLauncher;
+import com.netstal.tools.nubs.launcher.infrastructure.RakeCmdLauncher;
 
 public class NubsLauncherFrame extends JFrame {
  
@@ -45,19 +46,23 @@ public class NubsLauncherFrame extends JFrame {
    private JPanel layersPanel;
    private CardLayout layersLayout;
    private JToolBar toolBar;
-   private SuggestField suggestField;
+   private RakeTextField suggestField;
    private JLabel workspaceLabel;
    private JLabel tasksLabel;
 
    private RunRakeAction runRakeAction;
    private ChangeWorkspaceAction changeWorkspaceAction;
+   private ICommandHistory commandHistory;
+
+   private SuggestRakeTarget suggestRakeTarget;
 
 
    @Inject
-   public NubsLauncherFrame(IWorkspace workspace, IFilterChain filterChain) {
+   public NubsLauncherFrame(IWorkspace workspace, IFilterChain filterChain, ICommandHistory commandHistory) {
       super(PREFIX);
       this.workspace = workspace;
       this.filterChain = filterChain;
+      this.commandHistory = commandHistory;
       createUi();
       createActions();
       this.workspace.addListener(new IEventListener<IWorkspace>() {
@@ -123,7 +128,13 @@ public class NubsLauncherFrame extends JFrame {
       toolBar.add(workspaceLabel);
       
       
-      suggestField = new SuggestField(new SuggestListModel(filterChain));
+      suggestField = new RakeTextField(new SuggestListModel(filterChain),commandHistory,workspace);
+      
+      suggestRakeTarget = new SuggestRakeTarget(suggestField.getTextField(),new SuggestListModel(filterChain));
+      suggestField.addTool(suggestRakeTarget);
+      suggestField.addTool(new RakeCommandHistory(suggestField.getTextField(),commandHistory));
+    
+      
       rootPanel.add(suggestField);
       
       
@@ -135,20 +146,20 @@ public class NubsLauncherFrame extends JFrame {
    
    private void createActions() {
         
-      suggestField.addSuggestListener(new ISuggestFieldListener() {     
+      suggestRakeTarget.addSuggestListener(new ISuggestFieldListener() {     
          @Override
          public void changed(String newText) {
             filterChain.setSuggestFilter(newText);
          }
       });
       
-      suggestField.addActionListener(new ActionListener() {
-         
-         @Override
-         public void actionPerformed(ActionEvent e) {
-            runRakeAction.actionPerformed(e);
-         }
-      });
+//      suggestField.addActionListener(new ActionListener() {
+//         
+//         @Override
+//         public void actionPerformed(ActionEvent e) {
+//            runRakeAction.actionPerformed(e);
+//         }
+//      });
    }
 
    private void changeLayer(String layer) {
@@ -179,9 +190,9 @@ public class NubsLauncherFrame extends JFrame {
          System.out.println("Execute " + suggestField.getText());
          
          try {
-            new CmdLauncher("rake "+suggestField.getText())
-            .directory(workspace.getRoot())
-            .launch();
+            Command command = new Command(suggestField.getText());
+            commandHistory.push(command);
+            new RakeCmdLauncher().launch(command,workspace.getRoot());
          }
          catch (IOException exception) {
             exception.printStackTrace();

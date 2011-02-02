@@ -9,23 +9,16 @@ package com.netstal.tools.nubs.launcher.infrastructure;
 import java.io.File;
 import java.io.IOException;
 
-public class CmdLauncher {
+import com.netstal.tools.nubs.launcher.domain.Command;
+
+public class RakeCmdLauncher {
 
    private static final String DOUBLE_QUOTE = "\"";
-   private String cmd;
-   private ProcessBuilder processBuilder;
+   private static final String RAKE = "rake ";
    
-   public CmdLauncher(String cmd) {
-      this.cmd = cmd;
-      processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/K",DOUBLE_QUOTE + this.cmd + DOUBLE_QUOTE);
-   }
-   
-   public CmdLauncher directory(File directory) {
+   public void launch(Command command,File directory) throws IOException {
+      ProcessBuilder processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/K",DOUBLE_QUOTE + RAKE + command.toString() + DOUBLE_QUOTE);
       processBuilder.directory(directory);
-      return this;
-   }
-
-   public void launch() throws IOException {
       processBuilder.start();
    }
    

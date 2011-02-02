@@ -9,7 +9,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import com.netstal.tools.nubs.launcher.domain.CommandHistory;
 import com.netstal.tools.nubs.launcher.domain.FilterChain;
+import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskParser;
@@ -42,6 +44,7 @@ public class NubsLauncher {
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);
+            bind(ICommandHistory.class).to(CommandHistory.class).in(Singleton.class);
             bind(LoadTasksPanel.class); 
             bind(NubsLauncherFrame.class);  
          }   
