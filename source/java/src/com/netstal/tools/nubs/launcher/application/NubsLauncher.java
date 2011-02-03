@@ -13,14 +13,24 @@ import com.netstal.tools.nubs.launcher.domain.CommandHistory;
 import com.netstal.tools.nubs.launcher.domain.FilterChain;
 import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
+import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
+import com.netstal.tools.nubs.launcher.domain.RakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.Workspace;
+import com.netstal.tools.nubs.launcher.infrastructure.ConsoleLauncher;
+import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
+import com.netstal.tools.nubs.launcher.ui.RakeTasksField;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.CommandHistoryTool;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.IToolsFactory;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.LaunchRakeTool;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.SuggestTaskTool;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.ToolsFactory;
 
 public class NubsLauncher {
 
@@ -40,15 +50,24 @@ public class NubsLauncher {
       Injector injector = Guice.createInjector(new AbstractModule(){
          @Override
          protected void configure() {
+            bind(IConsoleLauncher.class).to(ConsoleLauncher.class);
+            
+            bind(IRakeLauncher.class).to(RakeLauncher.class);
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);
             bind(ICommandHistory.class).to(CommandHistory.class).in(Singleton.class);
+            bind(IToolsFactory.class).to(ToolsFactory.class).in(Singleton.class);
+            bind(RakeTasksField.class).in(Singleton.class); 
+            bind(NubsLauncherFrame.class).in(Singleton.class);  
             bind(LoadTasksPanel.class); 
-            bind(NubsLauncherFrame.class);  
+            bind(SuggestTaskTool.class);
+            bind(CommandHistoryTool.class);
+            bind(LaunchRakeTool.class);
          }   
       });
+      
       return injector;
    }
    

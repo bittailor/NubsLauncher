@@ -4,7 +4,7 @@
 //
 //*****************************************************************************
 
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
 import java.util.List;
 

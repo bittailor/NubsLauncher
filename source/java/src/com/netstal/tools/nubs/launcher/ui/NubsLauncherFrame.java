@@ -25,11 +25,9 @@ import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.Command;
-import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
-import com.netstal.tools.nubs.launcher.domain.IFilterChain;
+import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
-import com.netstal.tools.nubs.launcher.infrastructure.RakeCmdLauncher;
 
 public class NubsLauncherFrame extends JFrame {
  
@@ -41,30 +39,26 @@ public class NubsLauncherFrame extends JFrame {
    private static final String PREFIX = "NUBS - ";
    
    private IWorkspace workspace;
-   private IFilterChain filterChain;
-
+   private IRakeLauncher launcher;
+   
    private JPanel layersPanel;
    private CardLayout layersLayout;
    private JToolBar toolBar;
-   private RakeTextField suggestField;
+   private RakeTasksField suggestField;
    private JLabel workspaceLabel;
    private JLabel tasksLabel;
 
    private RunRakeAction runRakeAction;
    private ChangeWorkspaceAction changeWorkspaceAction;
-   private ICommandHistory commandHistory;
 
-   private SuggestRakeTarget suggestRakeTarget;
-
-
+   
    @Inject
-   public NubsLauncherFrame(IWorkspace workspace, IFilterChain filterChain, ICommandHistory commandHistory) {
+   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher) {
       super(PREFIX);
       this.workspace = workspace;
-      this.filterChain = filterChain;
-      this.commandHistory = commandHistory;
+      this.launcher = launcher;
+      this.suggestField = rakeTasksField;
       createUi();
-      createActions();
       this.workspace.addListener(new IEventListener<IWorkspace>() {
          @Override
          public void notify(IWorkspace source) {
@@ -126,42 +120,13 @@ public class NubsLauncherFrame extends JFrame {
       toolBar.add(tasksLabel);
       workspaceLabel = new JLabel("-");
       toolBar.add(workspaceLabel);
-      
-      
-      suggestField = new RakeTextField(new SuggestListModel(filterChain),commandHistory,workspace);
-      
-      suggestRakeTarget = new SuggestRakeTarget(suggestField.getTextField(),new SuggestListModel(filterChain));
-      suggestField.addTool(suggestRakeTarget);
-      suggestField.addTool(new RakeCommandHistory(suggestField.getTextField(),commandHistory));
-    
-      
+     
       rootPanel.add(suggestField);
       
-      
       LoadTasksPanel loadTasksScreen = new LoadTasksPanel();
-      layersPanel.add(loadTasksScreen,LOAD_LAYER);
-      
-     
+      layersPanel.add(loadTasksScreen,LOAD_LAYER);  
    }
    
-   private void createActions() {
-        
-      suggestRakeTarget.addSuggestListener(new ISuggestFieldListener() {     
-         @Override
-         public void changed(String newText) {
-            filterChain.setSuggestFilter(newText);
-         }
-      });
-      
-//      suggestField.addActionListener(new ActionListener() {
-//         
-//         @Override
-//         public void actionPerformed(ActionEvent e) {
-//            runRakeAction.actionPerformed(e);
-//         }
-//      });
-   }
-
    private void changeLayer(String layer) {
       layersLayout.show(layersPanel,layer);
    }
@@ -187,12 +152,11 @@ public class NubsLauncherFrame extends JFrame {
       
       @Override
       public void actionPerformed(ActionEvent event) {
-         System.out.println("Execute " + suggestField.getText());
+         System.out.println("Execute " + suggestField.getTextField().getText());
          
          try {
-            Command command = new Command(suggestField.getText());
-            commandHistory.push(command);
-            new RakeCmdLauncher().launch(command,workspace.getRoot());
+            Command command = new Command(suggestField.getTextField().getText());
+            launcher.launch(command);
          }
          catch (IOException exception) {
             exception.printStackTrace();
@@ -235,7 +199,5 @@ public class NubsLauncherFrame extends JFrame {
          changeWorkspace(workspace.getRoot());
       }     
    }
-   
-   
-   
+
 }

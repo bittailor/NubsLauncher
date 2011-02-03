@@ -4,8 +4,9 @@
 //
 //*****************************************************************************
 
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
-public interface ISuggestFieldListener {
-   public void changed(String newText);
+public interface IToolsFactory {
+   public ITool createDefaultTool();
+   public Iterable<ITool> createTools();
 }

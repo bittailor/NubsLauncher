@@ -4,43 +4,78 @@
 //
 //*****************************************************************************
 
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
-import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import com.google.inject.Inject;
+import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 
-public class SuggestRakeTarget implements IRakeTextFieldTool {
+public class SuggestTaskTool extends AbstractTool {
 
-   private List<ISuggestFieldListener> suggestListeners = new ArrayList<ISuggestFieldListener>();
-   
-   private JTextField suggestTextField;
+   private IFilterChain filterChain;
    private ListModel suggestListModel;
    private JList suggestList;
    private JPopupMenu suggestPopup;
     
-   public SuggestRakeTarget(JTextField suggestTextField, ListModel suggestListModel) {
-      this.suggestTextField = suggestTextField;
-      this.suggestListModel = suggestListModel;
-      createUi();
+   @Inject
+   public SuggestTaskTool(IFilterChain filterChain) {
+      super(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
+      this.filterChain = filterChain;
+      suggestListModel = new SuggestListModel(filterChain);
+      createUi();       
+   }
+   
+   private void suggestTextChanged() {  
+      if(suggestPopup.isVisible()) {
+         SwingUtilities.invokeLater(new Runnable() {            
+            @Override
+            public void run() {
+               notiySuggestListeners();
+            }
+         });
+      }
+   }
+     
+   private void createUi() { 
+      suggestList = new JList(suggestListModel);
+      suggestList.setFocusable(false);
       
-      suggestTextField.getDocument().addDocumentListener(new DocumentListener() {        
+      JScrollPane scrollPane = new JScrollPane(suggestList);
+      scrollPane.setBorder(null);
+      scrollPane.getVerticalScrollBar().setFocusable(false);
+      scrollPane.getHorizontalScrollBar().setFocusable(false);
+
+      suggestPopup = new JPopupMenu();
+      suggestPopup.setBorder(BorderFactory.createTitledBorder("Tasks"));
+      suggestPopup.add(scrollPane);
+      suggestPopup.setFocusable(false);
+   }
+   
+   
+   
+   @Override
+   public void initialize(JTextField tasksTextField) {
+      super.initialize(tasksTextField);
+      getTasksField().getDocument().addDocumentListener(new DocumentListener() {        
          @Override
          public void removeUpdate(DocumentEvent e) {
             suggestTextChanged();      
@@ -56,45 +91,11 @@ public class SuggestRakeTarget implements IRakeTextFieldTool {
             suggestTextChanged();
          }
       });
-      
    }
-   
-   private void suggestTextChanged() {  
-      if(suggestPopup.isVisible()) {
-         SwingUtilities.invokeLater(new Runnable() {            
-            @Override
-            public void run() {
-               notiySuggestListeners();
-            }
-         });
-      }
-   }
-   
-   public void addSuggestListener(ISuggestFieldListener listener) {
-      suggestListeners.add(listener);
-   }
-   
-   public void removeSuggestListener(ISuggestFieldListener listener) {
-      suggestListeners.remove(listener);
-   }
-   
-   private void createUi() { 
-      suggestList = new JList(suggestListModel);
-      suggestList.setFocusable(false);
-      
-      JScrollPane scrollPane = new JScrollPane(suggestList);
-      scrollPane.setBorder(null);
-      scrollPane.getVerticalScrollBar().setFocusable(false);
-      scrollPane.getHorizontalScrollBar().setFocusable(false);
 
-      suggestPopup = new JPopupMenu();
-      suggestPopup.setBorder(BorderFactory.createLineBorder(Color.black));
-      suggestPopup.add(scrollPane);
-      suggestPopup.setFocusable(false);
-   }
-   
    @Override
    public void activate() {
+      suggestList.clearSelection();
       showSuggestPopup();
    }
 
@@ -124,46 +125,36 @@ public class SuggestRakeTarget implements IRakeTextFieldTool {
       closeSuggestPopup();
    }
    
-   @Override
-   public int getKeyCode() {
-      return KeyEvent.VK_SPACE;
-   }
-
-   @Override
-   public int getModifiers() {
-      return InputEvent.CTRL_MASK;
-   }
-   
    private void showSuggestPopup() {
       // currentState = new SelectRakeTargetTool(this);
       notiySuggestListeners();
       int x = 0;
       try {
-         int pos = Math.min(suggestTextField.getCaret().getDot(), suggestTextField.getCaret().getMark());
-         x = suggestTextField.getUI().modelToView(suggestTextField, pos).x;
+         int pos = Math.min(getTasksField().getCaret().getDot(), getTasksField().getCaret().getMark());
+         TextUI ui = getTasksField().getUI();
+         Rectangle modelToView = ui.modelToView(getTasksField(), pos);
+         x = modelToView.x;
       }
       catch (BadLocationException e) {
          // this should never happen!!!
          e.printStackTrace();
       }
-      suggestPopup.show(suggestTextField, x, suggestTextField.getHeight());
-      suggestTextField.requestFocus();
+      suggestPopup.setPreferredSize(new Dimension(getTasksField().getWidth()-x, getTasksField().getHeight()*15));
+      suggestPopup.show(getTasksField(), x, getTasksField().getHeight());
+      getTasksField().requestFocus();
    }
    
    private void notiySuggestListeners() {
-      for ( ISuggestFieldListener listener : suggestListeners) {
-         System.out.println(getSuggestWord());
-         listener.changed(getSuggestWord() );
-      }
+      filterChain.setSuggestFilter(getSuggestWord());
    }
    
    private String getSuggestWord() {
-      return suggestTextField.getText().substring(Math.max(0,getStartIndexOfSuggestWord()),getEndIndexOfSuggestWord());
+      return getTasksField().getText().substring(Math.max(0,getStartIndexOfSuggestWord()),getEndIndexOfSuggestWord());
    }
    
    private int getStartIndexOfSuggestWord() {
       int carret = getEndIndexOfSuggestWord();
-      String text = suggestTextField.getText();
+      String text = getTasksField().getText();
       for(int i = carret-1 ; i>=0 ; i--){
          if(text.charAt(i)==' ') {
             return i+1;
@@ -173,7 +164,7 @@ public class SuggestRakeTarget implements IRakeTextFieldTool {
    }
    
    private int getEndIndexOfSuggestWord() {
-      return Math.min(suggestTextField.getText().length(), suggestTextField.getCaretPosition());
+      return Math.min(getTasksField().getText().length(), getTasksField().getCaretPosition());
    }
    
    public void insertCurrentSuggestSelection() {
@@ -186,7 +177,7 @@ public class SuggestRakeTarget implements IRakeTextFieldTool {
       int offset = getStartIndexOfSuggestWord();
       int length = getEndIndexOfSuggestWord() - offset;
       try {
-         Document document = suggestTextField.getDocument();
+         Document document = getTasksField().getDocument();
          document.remove(offset,length);
          document.insertString(offset, selection, null);
          offset = offset + selection.length();

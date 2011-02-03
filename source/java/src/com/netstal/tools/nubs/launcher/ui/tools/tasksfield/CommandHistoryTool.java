@@ -4,9 +4,8 @@
 //
 //*****************************************************************************
 
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -17,26 +16,24 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
+import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 
-/**
- * 
- */
-public class RakeCommandHistory implements IRakeTextFieldTool {
+public class CommandHistoryTool extends AbstractTool {
 
-   private JTextField suggestField;
    private ICommandHistory commandHistory;
    private JList historyList;
    private DefaultListModel historyModel;
    private JPopupMenu historyPopup;
    
-   public RakeCommandHistory(JTextField suggestField, ICommandHistory commandHistory) {
-      this.suggestField = suggestField;
+   @Inject
+   public CommandHistoryTool(ICommandHistory commandHistory) {
+      super(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_MASK));
       this.commandHistory = commandHistory;
-      
+  
       historyModel = new DefaultListModel();
       historyList = new JList(historyModel);
       historyList.setFocusable(false);
@@ -47,7 +44,7 @@ public class RakeCommandHistory implements IRakeTextFieldTool {
       scrollPane.getHorizontalScrollBar().setFocusable(false);
 
       historyPopup = new JPopupMenu();
-      historyPopup.setBorder(BorderFactory.createLineBorder(Color.black));
+      historyPopup.setBorder(BorderFactory.createTitledBorder("History"));
       historyPopup.add(scrollPane);
       historyPopup.setFocusable(false);
       
@@ -84,29 +81,19 @@ public class RakeCommandHistory implements IRakeTextFieldTool {
       if (selectedValue == null) {
          return;
       }
-      suggestField.setText(selectedValue.toString());
+      getTasksField().setText(selectedValue.toString());
       closePopup();
    }
    
-   @Override
-   public int getKeyCode() {
-      return KeyEvent.VK_H;
-   }
-
-   @Override
-   public int getModifiers() {
-      return InputEvent.CTRL_MASK;
-   }
-
    @Override
    public void escape(ActionEvent event) {
       closePopup();
    }
    
    private void showPopup() {
-      historyPopup.setPreferredSize(new Dimension(suggestField.getWidth(), suggestField.getHeight()*10));
-      historyPopup.show(suggestField, 0, suggestField.getHeight());
-      suggestField.requestFocus();
+      historyPopup.setPreferredSize(new Dimension(getTasksField().getWidth(), getTasksField().getHeight()*10));
+      historyPopup.show(getTasksField(), 0, getTasksField().getHeight());
+      getTasksField().requestFocus();
    }
    
    private void closePopup() {

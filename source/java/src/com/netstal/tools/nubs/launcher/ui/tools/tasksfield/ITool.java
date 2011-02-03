@@ -4,14 +4,15 @@
 //
 //*****************************************************************************
 
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
 import java.awt.event.ActionEvent;
 
-public interface IRakeTextFieldTool {
+import javax.swing.JTextField;
+
+public interface ITool {
    
-   public int getKeyCode(); 
-   public int getModifiers();
+   public void initialize(JTextField tasksTextField);
    
    public void activate();
    public void keyUp();
