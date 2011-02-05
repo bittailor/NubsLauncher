@@ -98,6 +98,7 @@ public class CommandHistoryTool extends AbstractTool {
    
    private void closePopup() {
       historyPopup.setVisible(false);
+      historyModel.clear();
    }
 
 }

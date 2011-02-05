@@ -9,36 +9,29 @@ package com.netstal.tools.nubs.launcher.domain;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-/**
- * 
- */
 public class CommandHistory implements ICommandHistory {
 
+   // TODO - fsc - preferences - get history size from preferences.
+   public static final int MAXIMAL_SIZE = 20;
+   
    private LinkedList<Command> history = new LinkedList<Command>();
    
    @Override
    public void push(Command command) {
       history.remove(command);
       history.addFirst(command);
-   }
-
-   @Override
-   public Command get(int index) {
-      index = index % Math.max(1,history.size());
-      if(index < 0) {
-         index = history.size() + index;
-      }
-      try {
-         return history.get(index);
-      }
-      catch (IndexOutOfBoundsException exception) {
-         return new Command("");
+      if (history.size() > MAXIMAL_SIZE) {
+         history.removeLast();
       }
    }
 
    @Override
    public Iterator<Command> iterator() {
       return history.iterator();
+   }
+   
+   public int size() {
+      return history.size();
    }
 
 }

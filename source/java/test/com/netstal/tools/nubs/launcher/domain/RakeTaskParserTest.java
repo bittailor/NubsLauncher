@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher;
+package com.netstal.tools.nubs.launcher.domain;
 
 import static org.junit.Assert.*;
 
@@ -42,6 +42,12 @@ public class RakeTaskParserTest {
       }
       catch (IOException e) {
          throw new RuntimeException(e);
+      }
+      finally {
+         try {
+            in.close();
+         }
+         catch (IOException e) {}
       }
    }
    

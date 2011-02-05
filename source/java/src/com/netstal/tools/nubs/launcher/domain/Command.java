@@ -11,6 +11,9 @@ public class Command {
    private final String command;
 
    public Command(String command) {
+      if (command==null) {
+         throw new IllegalArgumentException("command can not be null");
+      }
       this.command = command;
    }
 
@@ -23,7 +26,7 @@ public class Command {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((command == null) ? 0 : command.hashCode());
+      result = prime * result + command.hashCode();
       return result;
    }
 
@@ -33,10 +36,7 @@ public class Command {
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
       Command other = (Command) obj;
-      if (command == null) {
-         if (other.command != null) return false;
-      }
-      else if (!command.equals(other.command)) return false;
+      if (!command.equals(other.command)) return false;
       return true;
    }
    

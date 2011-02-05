@@ -15,6 +15,9 @@
 	<property name="target.classes.src" location="${target}/build/src" />
 	<property name="target.classes.test" location="${target}/build/test" />
 
+	<property name="target.classes.src.instrument" location="${target}/build/instrument" />
+	<property name="coverage.dir" location="${target}/build/coverage" />
+
 	<property name="target.unittest" location="${target}/build/unittest" />
 
 	<property name="target.dist" location="${target}/build/dist" />
@@ -24,6 +27,13 @@
 	<property name="launch4j.dir" location="c:/Programme/Launch4j" />
 	<available file="${launch4j.dir}" type="dir" property="launch4j.present" />
 
+	<property name="emma.dir" value="${lib.test}" />
+	<path id="emma.lib">
+		<pathelement location="${emma.dir}/emma.jar" />
+		<pathelement location="${emma.dir}/emma_ant.jar" />
+	</path>
+
+	<taskdef resource="emma_ant.properties" classpathref="emma.lib" />
 
 	<path id="path.libraries.src">
 		<fileset dir="${lib.compile}">
@@ -35,6 +45,10 @@
 		<fileset dir="${lib.test}">
 			<include name="*.jar" />
 		</fileset>
+	</path>
+
+	<path id="path.code.src">
+		<pathelement location="${target.classes.src}" />
 	</path>
 
 	<target name="revision">
@@ -59,7 +73,7 @@
 		<mkdir dir="${target.classes.test}" />
 
 		<!-- compile sources -->
-		<javac debug="true" srcdir="${source.src}" destdir="${target.classes.src}">
+		<javac debug="true" srcdir="${source.src}" destdir="${target.classes.src}" includeantruntime="false">
 			<classpath>
 				<path refid="path.libraries.src" />
 			</classpath>
@@ -72,9 +86,9 @@
 		</copy>
 
 		<!-- compile tests -->
-		<javac debug="true" srcdir="${source.test}" destdir="${target.classes.test}">
+		<javac debug="true" srcdir="${source.test}" destdir="${target.classes.test}" includeantruntime="false">
 			<classpath>
-				<pathelement path="${target.classes.src}" />
+				<path refid="path.code.src" />
 				<path refid="path.libraries.src" />
 				<path refid="path.libraries.test" />
 			</classpath>
@@ -88,16 +102,30 @@
 
 	</target>
 
-	<target name="unittest" depends="compile">
+	<target name="instrument" depends="compile">
+		<emma>
+			<instr 
+				instrpathref="path.code.src" 
+		      destdir="${target.classes.src.instrument}" 
+				metadatafile="${coverage.dir}/metadata.emma" 
+				merge="true" />
+		</emma>
+	</target>
+
+	<target name="unittest" depends="instrument">
 		<mkdir dir="${target.unittest}" />
 
 		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="test.failed">
 			<classpath>
+				<pathelement path="${target.classes.src.instrument}" />
 				<pathelement path="${target.classes.src}" />
 				<pathelement path="${target.classes.test}" />
 				<path refid="path.libraries.src" />
 				<path refid="path.libraries.test" />
+				<path refid="emma.lib" />
 			</classpath>
+			<jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma" />
+			<jvmarg value="-Demma.coverage.out.merge=true" />
 			<batchtest todir="${target.unittest}">
 				<fileset dir="${source.test}">
 					<include name="**/*Test.java" />
@@ -113,30 +141,40 @@
 			<report format="frames" todir="${target.unittest}/html" />
 		</junitreport>
 
+		<emma>
+			<report sourcepath="${source.src}">
+				<fileset dir="${coverage.dir}">
+					<include name="*.emma" />
+				</fileset>
+				<xml  outfile="${coverage.dir}/coverage.xml" />
+				<html outfile="${coverage.dir}/coverage.html" />
+			</report>
+		</emma>
+
 		<fail if="test.failed">
 		   Failures in unittests.
 		</fail>
 	</target>
 
-	<target name="build" depends="unittest,compile" description="generate the distribution"/>  
-	
+	<target name="build" depends="unittest,compile" description="generate the distribution" />
+
 	<target name="release" depends="build,revision" description="generate the distribution">
 		<mkdir dir="${target.dist}" />
 		<jar destfile="${target.dist}/NubsLauncher.jar">
 			<manifest>
-				<attribute name="Built-By" value="Bittailor.ch"/>
-				<attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher"/>
-				<attribute name="Class-Path" value="."/>
-				<attribute name="Implementation-Version" value="${svn.revision}"/>
+				<attribute name="Built-By" value="Bittailor.ch" />
+				<attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher" />
+				<attribute name="Class-Path" value="." />
+				<attribute name="Implementation-Version" value="${svn.revision}" />
 			</manifest>
-			<fileset dir="${target.classes.src}"/>
-			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar"/>
-			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar"/>
+			<fileset dir="${target.classes.src}" />
+			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar" />
+			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/aopalliance-1.0.jar" />
 		</jar>
 	</target>
 
 	<target name="exe" depends="release" description="generate the executable (depends on a lauch4j installation)">
-		<taskdef  name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 		<launch4j configFile="source/launch4j/NubsLauncher.xml" jarPath="${target.dist}/NubsLauncher.jar" outfile="${target.dist}/nubs.exe" />
 	</target>
 

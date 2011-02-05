@@ -27,17 +27,17 @@ public class RakeTaskImporter implements IRakeTaskImporter {
          process = pb.start();
          StreamPumper streamPumper = new StreamPumper(process.getInputStream(),parser); 
          Thread pumperThread = new Thread(streamPumper);
-         pumperThread.run();
+         pumperThread.start();
          process.waitFor();
          pumperThread.join();
          System.out.println(process.exitValue());        
       }
       catch (IOException e) {
-         // TODO Auto-generated catch block
+         // TODO - fsc - logging - log exception.
          e.printStackTrace();
       }
       catch (InterruptedException e) {
-         // TODO Auto-generated catch block
+         // TODO - fsc - logging - log exception.
          e.printStackTrace();
       }
       return parser.getTasks();   
