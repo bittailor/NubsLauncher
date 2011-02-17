@@ -17,7 +17,7 @@ import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
-import com.netstal.tools.nubs.launcher.domain.RakeLauncher;
+import com.netstal.tools.nubs.launcher.domain.ConsoleRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.Workspace;
@@ -52,7 +52,7 @@ public class NubsLauncher {
          protected void configure() {
             bind(IConsoleLauncher.class).to(ConsoleLauncher.class);
             
-            bind(IRakeLauncher.class).to(RakeLauncher.class);
+            bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 

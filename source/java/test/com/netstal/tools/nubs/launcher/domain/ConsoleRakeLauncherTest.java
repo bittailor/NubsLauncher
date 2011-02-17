@@ -8,19 +8,16 @@ package com.netstal.tools.nubs.launcher.domain;
 
 import static org.easymock.EasyMock.createControl;
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.easymock.IMocksControl;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 
-public class RakeLauncherTest {
+public class ConsoleRakeLauncherTest {
 
 
    @Test
@@ -41,9 +38,9 @@ public class RakeLauncherTest {
       
       control.replay();
       
-      RakeLauncher rakeLauncher = new RakeLauncher(consoleLauncher, commandHistory, workspace);
+      ConsoleRakeLauncher consoleRakeLauncher = new ConsoleRakeLauncher(consoleLauncher, commandHistory, workspace);
       
-      rakeLauncher.launch(command);
+      consoleRakeLauncher.launch(command);
       
       control.verify();
    }

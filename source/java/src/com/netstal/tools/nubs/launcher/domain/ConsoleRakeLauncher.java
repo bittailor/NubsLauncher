@@ -12,7 +12,7 @@ import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 
 
-public class RakeLauncher implements IRakeLauncher {
+public class ConsoleRakeLauncher implements IRakeLauncher {
 
    private static final String RAKE = "rake ";
    private IConsoleLauncher consoleLauncher;
@@ -20,7 +20,7 @@ public class RakeLauncher implements IRakeLauncher {
    private IWorkspace workspace;
    
    @Inject
-   public RakeLauncher(IConsoleLauncher consoleLauncher, ICommandHistory commandHistory, IWorkspace workspace) {
+   public ConsoleRakeLauncher(IConsoleLauncher consoleLauncher, ICommandHistory commandHistory, IWorkspace workspace) {
       this.consoleLauncher = consoleLauncher;
       this.commandHistory = commandHistory;
       this.workspace = workspace;

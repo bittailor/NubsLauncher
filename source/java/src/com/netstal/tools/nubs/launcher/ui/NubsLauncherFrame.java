@@ -8,6 +8,7 @@ package com.netstal.tools.nubs.launcher.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +16,11 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -115,6 +118,7 @@ public class NubsLauncherFrame extends JFrame {
       changeWorkspaceAction = new ChangeWorkspaceAction();
       toolBar.add(changeWorkspaceAction);
       toolBar.add(new ReloadTaksAction());
+      toolBar.add(new AboutAction());
       toolBar.add(Box.createHorizontalGlue());
       tasksLabel = new JLabel("-");
       toolBar.add(tasksLabel);
@@ -199,5 +203,24 @@ public class NubsLauncherFrame extends JFrame {
          changeWorkspace(workspace.getRoot());
       }     
    }
+   
+   private class AboutAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public AboutAction() {
+         super("About",new ImageIcon(NubsLauncherFrame.class.getResource("images/About.png")));
+         this.putValue(SHORT_DESCRIPTION, "About");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Component component = NubsLauncherFrame.this;
+         JOptionPane.showMessageDialog(component,
+                  "Eggs are not supposed to be green.", 
+                  "Message",
+                  JOptionPane.INFORMATION_MESSAGE);
+      }     
+   }
+
 
 }
