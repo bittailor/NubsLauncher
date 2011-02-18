@@ -23,7 +23,7 @@ public class Configuration implements IConfiguration {
 
 	@Override
 	public String getInstallationServerPath() {
-	   return "S:/gruppe/te...";
+	   return "s:/Gruppe/TE/Verwaltung/Tools/NUBSLauncher";
 	}
 	
 	private boolean isWindows() {

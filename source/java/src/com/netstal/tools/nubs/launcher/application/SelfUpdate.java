@@ -1,15 +1,14 @@
 package com.netstal.tools.nubs.launcher.application;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import com.google.inject.Inject;
-import com.netstal.tools.nubs.launcher.domain.IConfiguration;
-import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
-import com.netstal.tools.nubs.launcher.infrastructure.I_LineConsumer;
-import com.netstal.tools.nubs.launcher.infrastructure.StreamPumper;
+import javax.swing.*;
+
+import com.google.inject.*;
+import com.netstal.tools.nubs.launcher.domain.*;
+import com.netstal.tools.nubs.launcher.infrastructure.*;
+import com.netstal.tools.nubs.launcher.ui.*;
 
 public class SelfUpdate {
    
@@ -29,26 +28,56 @@ public class SelfUpdate {
          return false;
       }
       try {
-         Process process = Runtime.getRuntime().exec("java -jar " + serverPath + "--version");
          LineConsumer lineConsumer = new LineConsumer();
+         String cmd = "java -jar " + serverPath + "\\nubs.exe --version";
+         System.out.println(cmd);
+         Process process = Runtime.getRuntime().exec(cmd);
          new Thread(new StreamPumper(process.getInputStream(),lineConsumer)).start();
          process.waitFor();
+         System.out.println(process.exitValue());
          if(lineConsumer.lines.isEmpty()) {
             return false;
          }
          String serverVersionString = lineConsumer.lines.get(0);
-         int ownVersion = Integer.parseInt(ownVersionString);
+         int ownVersion = 0;
+         try {
+            ownVersion = Integer.parseInt(ownVersionString);
+         } catch (NumberFormatException exception) {}
          int serverVersion = Integer.parseInt(serverVersionString);
          return serverVersion > ownVersion;
          
+      } catch (NumberFormatException e) {
       }
-      catch (Exception e) {}
+      catch (IOException e) {
+         e.printStackTrace();
+      }
+      catch (InterruptedException e) {
+         e.printStackTrace();
+      }
+      
       return false;
    }
    
-   public void selfUpdate() {
+   public void selfUpdate() {   
+      if(checkIfUpdatePossible()){
+         Object[] options = {"Update","Skip"};
+         int option = JOptionPane.showOptionDialog(null,
+                  "New Version Available.",
+                  "Update NUBS Launcher",
+                  JOptionPane.YES_NO_OPTION,
+                  JOptionPane.INFORMATION_MESSAGE,
+                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
+                  options,
+                  options[0]);
+         if(option==0){
+            launchSelfUpdate();
+         }
+      }
+   }
+
+   private void launchSelfUpdate() {
       try {
-         consoleLauncher.launch("install.bat -u", new File(System.getProperty("user.dir")));
+         consoleLauncher.launch(new File(configuration.getInstallationServerPath(),"install.rb").getAbsolutePath() + " -u", new File(System.getProperty("user.dir")));
          System.exit(0);
       }
       catch (IOException exception) {
@@ -57,7 +86,7 @@ public class SelfUpdate {
    }
    
    
-   private class LineConsumer implements I_LineConsumer {        
+   private static class LineConsumer implements I_LineConsumer {        
       List<String> lines = new LinkedList<String>();    
       @Override
       public void consumeLine(String line) {
