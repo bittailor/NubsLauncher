@@ -40,7 +40,9 @@ public class NubsLauncher {
       Injector injector = createInjector();
       
       SelfUpdate selfUpdate = injector.getInstance(SelfUpdate.class);
-      selfUpdate.selfUpdate();
+      if(selfUpdate.selfUpdate()) {
+         return;
+      }
       
       String userDirectory = System.getProperty("user.dir");
       NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);      

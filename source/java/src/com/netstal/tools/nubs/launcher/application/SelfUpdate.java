@@ -13,12 +13,10 @@ import com.netstal.tools.nubs.launcher.ui.*;
 public class SelfUpdate {
    
    IConfiguration configuration;
-   IConsoleLauncher consoleLauncher;
    
    @Inject
-   public SelfUpdate(IConfiguration configuration, IConsoleLauncher consoleLauncher) {
+   public SelfUpdate(IConfiguration configuration) {
       this.configuration = configuration;
-      this.consoleLauncher = consoleLauncher;
    }
 
    public boolean checkIfUpdatePossible() {
@@ -58,7 +56,7 @@ public class SelfUpdate {
       return false;
    }
    
-   public void selfUpdate() {   
+   public boolean selfUpdate() {   
       if(checkIfUpdatePossible()){
          Object[] options = {"Update","Skip"};
          int option = JOptionPane.showOptionDialog(null,
@@ -70,19 +68,22 @@ public class SelfUpdate {
                   options,
                   options[0]);
          if(option==0){
-            launchSelfUpdate();
+            return launchSelfUpdate();
          }
       }
+      return false;
    }
 
-   private void launchSelfUpdate() {
+   private boolean launchSelfUpdate() {
       try {
-         consoleLauncher.launch(new File(configuration.getInstallationServerPath(),"install.rb && exit").getAbsolutePath() + " -u", new File(System.getProperty("user.dir")));
-         System.exit(0);
+         ProcessBuilder processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/C",new File(configuration.getInstallationServerPath(),"install.rb").getAbsolutePath(),"-u");
+         processBuilder.start();
+         return true;
       }
       catch (IOException exception) {
          exception.printStackTrace();
       }
+      return false;
    }
    
    
