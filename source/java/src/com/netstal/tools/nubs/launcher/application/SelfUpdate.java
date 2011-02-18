@@ -77,7 +77,7 @@ public class SelfUpdate {
 
    private void launchSelfUpdate() {
       try {
-         consoleLauncher.launch(new File(configuration.getInstallationServerPath(),"install.rb").getAbsolutePath() + " -u", new File(System.getProperty("user.dir")));
+         consoleLauncher.launch(new File(configuration.getInstallationServerPath(),"install.rb && exit").getAbsolutePath() + " -u", new File(System.getProperty("user.dir")));
          System.exit(0);
       }
       catch (IOException exception) {
