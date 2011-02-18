@@ -21,8 +21,13 @@ public class Configuration implements IConfiguration {
 	   return implementationVersion;
 	}
 
+	@Override
+	public String getInstallationServerPath() {
+	   return "S:/gruppe/te...";
+	}
+	
 	private boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().indexOf( "windows" ) >= 0;
 	}
-	
+
 }

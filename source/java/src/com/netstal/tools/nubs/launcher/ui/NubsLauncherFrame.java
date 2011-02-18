@@ -8,12 +8,9 @@ package com.netstal.tools.nubs.launcher.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -21,7 +18,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
@@ -123,7 +119,7 @@ public class NubsLauncherFrame extends JFrame {
       changeWorkspaceAction = new ChangeWorkspaceAction();
       toolBar.add(changeWorkspaceAction);
       toolBar.add(new ReloadTaksAction());
-      toolBar.add(new AboutAction());
+      toolBar.add(new AboutAction(this,configuration.getVersion()));
       toolBar.add(Box.createHorizontalGlue());
       tasksLabel = new JLabel("-");
       toolBar.add(tasksLabel);
@@ -208,45 +204,5 @@ public class NubsLauncherFrame extends JFrame {
          changeWorkspace(workspace.getRoot());
       }     
    }
-   
-   private class AboutAction extends AbstractAction {
-      private static final long serialVersionUID = 1L;
-
-      public AboutAction() {
-         super("About", new ImageIcon(NubsLauncherFrame.class.getResource("images/About.png")));
-         this.putValue(SHORT_DESCRIPTION, "About");
-      }
-      
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         Component component = NubsLauncherFrame.this;
-         Object[] options = {"Ok","-> F&E Wiki"};
-         int n = JOptionPane.showOptionDialog(component,
-                  "<html>" +
-                  "<b>NUBS Launcher</b> Version " + configuration.getVersion() +
-                  "<br>"+
-                  "<br>"+
-                  "More Informationen @ F&E Wiki<html>",
-                  "About NUBS Launcher",
-                  JOptionPane.YES_NO_OPTION,
-                  JOptionPane.INFORMATION_MESSAGE,
-                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
-                  options,
-                  options[0]);
-         if(n==JOptionPane.NO_OPTION) {
-            if (Desktop.isDesktopSupported()) {
-               Desktop desktop = Desktop.getDesktop();
-               try {
-                  desktop.browse(new URI("http://fuewiki.nmag.ch/FuEWiki/index.php5/NUBS_Launcher"));
-               }
-               catch (Exception exception) {
-                  // TODO Auto-generated catch block
-                  exception.printStackTrace();
-               }
-            }
-         }
-      }     
-   }
-
 
 }
