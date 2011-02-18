@@ -10,17 +10,19 @@ import com.netstal.tools.nubs.launcher.infrastructure.StreamPumper;
 
 public class RakeTaskImporter implements IRakeTaskImporter {
 
+   private final String rakeOsCommand;
    private Provider<IRakeTaskParser> parserProvider;
    
    @Inject
-   public RakeTaskImporter(Provider<IRakeTaskParser> parserProvider) {
+   public RakeTaskImporter(Provider<IRakeTaskParser> parserProvider, IConfiguration properties) {
+      rakeOsCommand = properties.getRakeOsCommand();
       this.parserProvider = parserProvider;
    }
 
    @Override
    public SortedMap<String, RakeTask> importTasks(File root) {
       IRakeTaskParser parser = parserProvider.get();
-      ProcessBuilder pb = new ProcessBuilder("rake.bat", "-P");
+      ProcessBuilder pb = new ProcessBuilder(rakeOsCommand, "-P");
       pb.directory(root);
       Process process;
       try {

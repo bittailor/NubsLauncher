@@ -9,14 +9,15 @@ package com.netstal.tools.nubs.launcher.ui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,6 +29,7 @@ import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
@@ -42,7 +44,9 @@ public class NubsLauncherFrame extends JFrame {
    private static final String PREFIX = "NUBS - ";
    
    private IWorkspace workspace;
+   private IConfiguration configuration;
    private IRakeLauncher launcher;
+   
    
    private JPanel layersPanel;
    private CardLayout layersLayout;
@@ -56,10 +60,11 @@ public class NubsLauncherFrame extends JFrame {
 
    
    @Inject
-   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher) {
+   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher, IConfiguration configuration) {
       super(PREFIX);
       this.workspace = workspace;
       this.launcher = launcher;
+      this.configuration = configuration;
       this.suggestField = rakeTasksField;
       createUi();
       this.workspace.addListener(new IEventListener<IWorkspace>() {
@@ -208,17 +213,38 @@ public class NubsLauncherFrame extends JFrame {
       private static final long serialVersionUID = 1L;
 
       public AboutAction() {
-         super("About",new ImageIcon(NubsLauncherFrame.class.getResource("images/About.png")));
+         super("About", new ImageIcon(NubsLauncherFrame.class.getResource("images/About.png")));
          this.putValue(SHORT_DESCRIPTION, "About");
       }
       
       @Override
       public void actionPerformed(ActionEvent e) {
          Component component = NubsLauncherFrame.this;
-         JOptionPane.showMessageDialog(component,
-                  "Eggs are not supposed to be green.", 
-                  "Message",
-                  JOptionPane.INFORMATION_MESSAGE);
+         Object[] options = {"Ok","-> F&E Wiki"};
+         int n = JOptionPane.showOptionDialog(component,
+                  "<html>" +
+                  "<b>NUBS Launcher</b> Version " + configuration.getVersion() +
+                  "<br>"+
+                  "<br>"+
+                  "More Informationen @ F&E Wiki<html>",
+                  "About NUBS Launcher",
+                  JOptionPane.YES_NO_OPTION,
+                  JOptionPane.INFORMATION_MESSAGE,
+                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
+                  options,
+                  options[0]);
+         if(n==JOptionPane.NO_OPTION) {
+            if (Desktop.isDesktopSupported()) {
+               Desktop desktop = Desktop.getDesktop();
+               try {
+                  desktop.browse(new URI("http://fuewiki.nmag.ch/FuEWiki/index.php5/NUBS_Launcher"));
+               }
+               catch (Exception exception) {
+                  // TODO Auto-generated catch block
+                  exception.printStackTrace();
+               }
+            }
+         }
       }     
    }
 

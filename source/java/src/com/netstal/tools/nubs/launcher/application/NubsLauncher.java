@@ -10,8 +10,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.netstal.tools.nubs.launcher.domain.CommandHistory;
+import com.netstal.tools.nubs.launcher.domain.Configuration;
 import com.netstal.tools.nubs.launcher.domain.FilterChain;
 import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
@@ -59,6 +61,7 @@ public class NubsLauncher {
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);
             bind(ICommandHistory.class).to(CommandHistory.class).in(Singleton.class);
             bind(IToolsFactory.class).to(ToolsFactory.class).in(Singleton.class);
+            bind(IConfiguration.class).to(Configuration.class).in(Singleton.class);
             bind(RakeTasksField.class).in(Singleton.class); 
             bind(NubsLauncherFrame.class).in(Singleton.class);  
             bind(LoadTasksPanel.class); 
@@ -101,11 +104,7 @@ public class NubsLauncher {
    }
 
    private static void showVersion() {
-      String implementationVersion = NubsLauncher.class.getPackage().getImplementationVersion();
-      if (implementationVersion == null) {
-         implementationVersion = "local build";
-      }
-      System.out.println(implementationVersion);   
+      System.out.println(new Configuration().getVersion());   
       return;
    }
    

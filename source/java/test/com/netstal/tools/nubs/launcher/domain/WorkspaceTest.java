@@ -27,8 +27,9 @@ public class WorkspaceTest {
 
    @Before
    public void setUp() throws Exception {
-      root = new File("D:\\ws\\nms");
-      control = createControl();
+	  root = new File(System.getProperty("user.dir"),"nms");
+      
+	  control = createControl();
       importer = control.createMock("importer", IRakeTaskImporter.class);
       workspace = new Workspace(importer);   
    }
