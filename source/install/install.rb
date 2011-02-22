@@ -17,7 +17,7 @@ install_dir = File.dirname(rake_bat).gsub("/","\\")
 
 old_nubs = `utility\\which.cmd nubs.exe`.strip
 
-if !old_nubs.nil? && !old_nubs.empty? && File.dirname(old_nubs) != install_dir   
+if !old_nubs.nil? && !old_nubs.empty? && File.dirname(old_nubs) != install_dir && File.dirname(old_nubs) != server_dir.gsub("/","\\")   
    puts "delete old nubs from #{old_nubs}" 
    system("del #{old_nubs}")
 end
