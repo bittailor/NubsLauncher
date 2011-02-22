@@ -2,7 +2,9 @@ package com.netstal.tools.nubs.launcher.domain;
 
 public interface IConfiguration {
    
-   public String getVersion();
-	public String getRakeOsCommand();
-   public String getInstallationServerPath();
+   public String getRakeOsCommand();
+   
+	public String get(String key);
+   public boolean getFlag(String key);	
+	
 }

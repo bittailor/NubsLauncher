@@ -2,6 +2,8 @@ package com.netstal.tools.nubs.launcher.application;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 
@@ -12,23 +14,45 @@ import com.netstal.tools.nubs.launcher.ui.*;
 
 public class SelfUpdate {
    
+   private static Logger LOG = Logger.getLogger(SelfUpdate.class.getName());
+   
+   static final String SERVER_LOCATION = "update.ServerLocation";
+   static final String DISABLE_UPDATE = "update.DisableUpdate";
+   static final String ENABLE_AUTO_UPDATE = "update.EnableAutoUpdate";
+   
    IConfiguration configuration;
    
    @Inject
    public SelfUpdate(IConfiguration configuration) {
       this.configuration = configuration;
    }
+   
+   public boolean selfUpdate() {   
+      if (checkIfUpdatePossible()) {
+         if(checkIfUpdateWanted()){
+            return launchSelfUpdate();
+         }
+      }
+      return false;
+   }
 
-   public boolean checkIfUpdatePossible() {
-      String ownVersionString = configuration.getVersion();
-      File serverPath = new File(configuration.getInstallationServerPath());
-      if(!serverPath.exists()){
+   private boolean checkIfUpdatePossible() {
+      if (configuration.getFlag(DISABLE_UPDATE)) {
+         LOG.log(Level.CONFIG ,"Update is disabled");
          return false;
       }
+      
+      File serverPath = getServerDirectory();
+      if(!serverPath.exists()){
+         LOG.log(Level.INFO ,"Update server directory (" + serverPath.getAbsolutePath() + ") does not exist");
+         return false;
+      }
+      
+      String ownVersionString = Version.getVersion();
+      
       try {
          LineConsumer lineConsumer = new LineConsumer();
          String cmd = "java -jar " + serverPath + "\\nubs.exe --version";
-         System.out.println(cmd);
          Process process = Runtime.getRuntime().exec(cmd);
          new Thread(new StreamPumper(process.getInputStream(),lineConsumer)).start();
          process.waitFor();
@@ -55,28 +79,39 @@ public class SelfUpdate {
       
       return false;
    }
+
+   private File getServerDirectory() {
+      return new File(configuration.get(SERVER_LOCATION));
+   }
    
-   public boolean selfUpdate() {   
-      if(checkIfUpdatePossible()){
-         Object[] options = {"Update","Skip"};
-         int option = JOptionPane.showOptionDialog(null,
-                  "New Version Available.",
-                  "Update NUBS Launcher",
-                  JOptionPane.YES_NO_OPTION,
-                  JOptionPane.INFORMATION_MESSAGE,
-                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
-                  options,
-                  options[0]);
-         if(option==0){
-            return launchSelfUpdate();
-         }
+   
+   
+   private boolean checkIfUpdateWanted() {
+      if (configuration.getFlag(ENABLE_AUTO_UPDATE)) {
+         return true;
       }
-      return false;
+      
+      return askIfUpdateWanted();
+      
+         
+   }
+
+   private boolean askIfUpdateWanted() {
+      Object[] options = {"Update","Skip"};
+      int option = JOptionPane.showOptionDialog(null,
+               "New Version Available.",
+               "Update NUBS Launcher",
+               JOptionPane.YES_NO_OPTION,
+               JOptionPane.INFORMATION_MESSAGE,
+               new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
+               options,
+               options[0]);
+      return option==0; 
    }
 
    private boolean launchSelfUpdate() {
       try {
-         ProcessBuilder processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/C",new File(configuration.getInstallationServerPath(),"install.rb").getAbsolutePath(),"-u");
+         ProcessBuilder processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/C",new File(getServerDirectory(),"install.rb").getAbsolutePath(),"-u");
          processBuilder.start();
          return true;
       }

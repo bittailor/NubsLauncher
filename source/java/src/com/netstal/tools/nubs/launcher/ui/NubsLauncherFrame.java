@@ -25,10 +25,10 @@ import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.Command;
-import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
+import com.netstal.tools.nubs.launcher.infrastructure.Version;
 
 public class NubsLauncherFrame extends JFrame {
  
@@ -40,7 +40,6 @@ public class NubsLauncherFrame extends JFrame {
    private static final String PREFIX = "NUBS - ";
    
    private IWorkspace workspace;
-   private IConfiguration configuration;
    private IRakeLauncher launcher;
    
    
@@ -56,11 +55,10 @@ public class NubsLauncherFrame extends JFrame {
 
    
    @Inject
-   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher, IConfiguration configuration) {
+   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher) {
       super(PREFIX);
       this.workspace = workspace;
       this.launcher = launcher;
-      this.configuration = configuration;
       this.suggestField = rakeTasksField;
       createUi();
       this.workspace.addListener(new IEventListener<IWorkspace>() {
@@ -119,7 +117,7 @@ public class NubsLauncherFrame extends JFrame {
       changeWorkspaceAction = new ChangeWorkspaceAction();
       toolBar.add(changeWorkspaceAction);
       toolBar.add(new ReloadTaksAction());
-      toolBar.add(new AboutAction(this,configuration.getVersion()));
+      toolBar.add(new AboutAction(this,Version.getVersion()));
       toolBar.add(Box.createHorizontalGlue());
       tasksLabel = new JLabel("-");
       toolBar.add(tasksLabel);

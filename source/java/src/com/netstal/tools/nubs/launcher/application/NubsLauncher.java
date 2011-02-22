@@ -1,6 +1,9 @@
 package com.netstal.tools.nubs.launcher.application;
 
 import java.io.File;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -11,6 +14,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.netstal.tools.nubs.launcher.domain.CommandHistory;
 import com.netstal.tools.nubs.launcher.domain.Configuration;
+import com.netstal.tools.nubs.launcher.domain.ConsoleRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.FilterChain;
 import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
@@ -19,12 +23,12 @@ import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
-import com.netstal.tools.nubs.launcher.domain.ConsoleRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.Workspace;
 import com.netstal.tools.nubs.launcher.infrastructure.ConsoleLauncher;
 import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
+import com.netstal.tools.nubs.launcher.infrastructure.Version;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 import com.netstal.tools.nubs.launcher.ui.RakeTasksField;
@@ -81,6 +85,14 @@ public class NubsLauncher {
    }
    
    public static void main(final String[] args) {
+      Logger logger = Logger.getLogger("");
+      ConsoleHandler consoleHandler = new ConsoleHandler();
+      logger.addHandler(consoleHandler);
+      logger.setLevel(Level.WARNING);
+      consoleHandler.setLevel(Level.WARNING);
+      // logger.setLevel(Level.CONFIG);
+      // consoleHandler.setLevel(Level.CONFIG);
+      
       if(args.length==1 && args[0].equals("--version")) {
          showVersion();
          return;
@@ -110,7 +122,7 @@ public class NubsLauncher {
    }
 
    private static void showVersion() {
-      System.out.println(new Configuration().getVersion());   
+      System.out.println(Version.getVersion());   
       return;
    }
    
