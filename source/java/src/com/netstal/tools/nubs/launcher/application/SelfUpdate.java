@@ -1,16 +1,20 @@
 package com.netstal.tools.nubs.launcher.application;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
-import com.google.inject.*;
-import com.netstal.tools.nubs.launcher.domain.*;
-import com.netstal.tools.nubs.launcher.infrastructure.*;
-import com.netstal.tools.nubs.launcher.ui.*;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
+import com.netstal.tools.nubs.launcher.infrastructure.OutputGrabber;
+import com.netstal.tools.nubs.launcher.infrastructure.Version;
+import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 
 public class SelfUpdate {
    
@@ -21,10 +25,12 @@ public class SelfUpdate {
    static final String ENABLE_AUTO_UPDATE = "update.EnableAutoUpdate";
    
    IConfiguration configuration;
-   
+   Provider<OutputGrabber> outputGrabberProvider;
+
    @Inject
-   public SelfUpdate(IConfiguration configuration) {
+   public SelfUpdate(IConfiguration configuration, Provider<OutputGrabber> outputGrabberProvider) {
       this.configuration = configuration;
+      this.outputGrabberProvider = outputGrabberProvider;
    }
    
    public boolean selfUpdate() {   
@@ -50,49 +56,43 @@ public class SelfUpdate {
       
       String ownVersionString = Version.getVersion();
       
-      try {
-         LineConsumer lineConsumer = new LineConsumer();
-         String cmd = "java -jar " + serverPath + "\\nubs.exe --version";
-         Process process = Runtime.getRuntime().exec(cmd);
-         new Thread(new StreamPumper(process.getInputStream(),lineConsumer)).start();
-         process.waitFor();
-         if(lineConsumer.lines.isEmpty()) {
-            return false;
-         }
-         String serverVersionString = lineConsumer.lines.get(0);
-         int ownVersion = 0;
-         try {
-            ownVersion = Integer.parseInt(ownVersionString);
-         } catch (NumberFormatException exception) {}
-         int serverVersion = Integer.parseInt(serverVersionString);
-         return serverVersion > ownVersion;
-         
-      } catch (NumberFormatException e) {
-      }
-      catch (IOException e) {
-         LOG.log(Level.WARNING, "Problem Parsing Version Number", e);
-      }
-      catch (InterruptedException e) {
-         LOG.log(Level.WARNING, "Problem Parsing Version Number", e);
+      List<String> outputLines = outputGrabberProvider.get().grab("java", "-jar", serverPath + "\\nubs.exe","--version");
+      if (outputLines.isEmpty()) {
+         LOG.log(Level.WARNING, "Could not read version of nubs on server");
+         return false;
       }
       
-      return false;
+      String serverVersionString = outputLines.get(0).trim();
+      
+      int ownVersion = 0;
+      try {
+         ownVersion = Integer.parseInt(ownVersionString);
+      } catch (NumberFormatException exception) {
+         LOG.log(Level.WARNING, "Could not parse own version " + ownVersion);
+         return true;
+      }
+      
+      int serverVersion = 0; 
+      try {         
+         serverVersion = Integer.parseInt(serverVersionString);
+      } catch (NumberFormatException e) {
+         LOG.log(Level.WARNING, "Could not parse server version " + serverVersionString);
+         return false;
+      }      
+      
+      return serverVersion > ownVersion;
    }
 
    private File getServerDirectory() {
       return new File(configuration.get(SERVER_LOCATION));
    }
    
-   
-   
    private boolean checkIfUpdateWanted() {
       if (configuration.getFlag(ENABLE_AUTO_UPDATE)) {
          return true;
       }
       
-      return askIfUpdateWanted();
-      
-         
+      return askIfUpdateWanted();    
    }
 
    private boolean askIfUpdateWanted() {
@@ -119,15 +119,5 @@ public class SelfUpdate {
       }
       return false;
    }
-   
-   
-   private static class LineConsumer implements ILineConsumer {        
-      List<String> lines = new LinkedList<String>();    
-      @Override
-      public void consumeLine(String line) {
-         if(!line.isEmpty()) {
-            lines.add(line);
-         }
-      }
-   }
+
 }

@@ -2,6 +2,8 @@ package com.netstal.tools.nubs.launcher.infrastructure;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,17 +18,22 @@ public class OutputGrabber {
    public OutputGrabber(IProcessBuilder processBuilder) {
       this.processBuilder = processBuilder;
    }
-
-   public String grab(File directory, String... command) {
-      final StringBuilder lines = new StringBuilder();
+   
+   public OutputGrabber directory(File directory) {
       processBuilder.directory(directory);
+      return this;
+   }
+
+   public List<String> grab(String... command) {
+      final List<String> lines = new LinkedList<String>();
+      
       processBuilder.outputConsumer(new ILineConsumer() {        
          @Override
          public void consumeLine(String line) {
-            lines.append(line).append("\n");
+            lines.add(line);
          }
       });
-
+  
       IProcess process;
       try {
          process = processBuilder.start();   
@@ -38,7 +45,7 @@ public class OutputGrabber {
       catch (InterruptedException e) {
          LOG.log(Level.WARNING ,"Failed to grab output of " + commandString(command), e);
       }        
-      return lines.toString();
+      return lines;
    }
    
    private String commandString (String... command) {
