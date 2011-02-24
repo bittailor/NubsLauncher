@@ -108,9 +108,13 @@
 		<emma>
 			<instr 
 				instrpathref="path.code.src" 
-		      destdir="${target.classes.src.instrument}" 
+		        destdir="${target.classes.src.instrument}" 
 				metadatafile="${coverage.dir}/metadata.emma" 
-				merge="true" />
+				merge="true">
+				<!-- Currently filter UI from coverage -->
+				<filter excludes="com.netstal.tools.nubs.launcher.ui.*" />
+				<filter excludes="com.netstal.tools.nubs.launcher.ui.tools.tasksfield.*" />
+		    </instr>
 		</emma>
 	</target>
 
