@@ -36,7 +36,7 @@ public class OutputGrabber {
   
       IProcess process;
       try {
-         process = processBuilder.start();   
+         process = processBuilder.command(command).start();   
          process.waitFor();
       }
       catch (IOException e) {

@@ -66,13 +66,17 @@ public class SelfUpdate {
       }
       
       String serverVersionString = outputLines.get(0).trim();
+      LOG.log(Level.INFO, "Server Version String is " + serverVersionString);
+      LOG.log(Level.INFO, "Own Version String is    " + ownVersionString);
       
       int ownVersion = 0;
-      try {
-         ownVersion = Integer.parseInt(ownVersionString);
-      } catch (NumberFormatException exception) {
-         LOG.log(Level.WARNING, "Could not parse own version " + ownVersion);
-         return true;
+      if (!ownVersionString.equals(Version.LOCAL_BUILD)) {
+         try {
+            ownVersion = Integer.parseInt(ownVersionString);
+         } catch (NumberFormatException exception) {
+            LOG.log(Level.WARNING, "Could not parse own version " + ownVersion);
+            return true;
+         }
       }
       
       int serverVersion = 0; 
