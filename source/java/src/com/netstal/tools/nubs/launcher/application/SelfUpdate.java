@@ -89,7 +89,7 @@ public class SelfUpdate {
       
       return serverVersion > ownVersion;
    }
-
+   
    private File getServerDirectory() {
       return new File(configuration.get(SERVER_LOCATION));
    }
