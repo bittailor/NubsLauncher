@@ -28,6 +28,9 @@ import com.netstal.tools.nubs.launcher.domain.RakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.Workspace;
 import com.netstal.tools.nubs.launcher.infrastructure.ConsoleLauncher;
 import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
+import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
+import com.netstal.tools.nubs.launcher.infrastructure.OutputGrabber;
+import com.netstal.tools.nubs.launcher.infrastructure.ProcessBuilderWrapper;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
@@ -69,6 +72,8 @@ public class NubsLauncher {
             bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
+            bind(IProcessBuilder.class).to(ProcessBuilderWrapper.class);
+            
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);
             bind(ICommandHistory.class).to(CommandHistory.class).in(Singleton.class);
@@ -76,10 +81,12 @@ public class NubsLauncher {
             bind(IConfiguration.class).to(Configuration.class).in(Singleton.class);
             bind(RakeTasksField.class).in(Singleton.class); 
             bind(NubsLauncherFrame.class).in(Singleton.class);  
+            
             bind(LoadTasksPanel.class); 
             bind(SuggestTaskTool.class);
             bind(CommandHistoryTool.class);
             bind(LaunchRakeTool.class);
+            bind(OutputGrabber.class);
          }   
       });
       
