@@ -20,6 +20,10 @@ public class StreamPumper implements Runnable {
 
    @Override
    public void run() {
+      work();
+   }
+
+   private void work() {
       try {
          String line;
          while ((line=in.readLine()) != null) {
@@ -28,11 +32,7 @@ public class StreamPumper implements Runnable {
       } catch (IOException e) {
          // do nothing
       } finally {
-         try {
-            in.close();
-        } catch (IOException ignored) {
-           // ignore
-        }
+         Stream.close(in);
       }
    }
 
