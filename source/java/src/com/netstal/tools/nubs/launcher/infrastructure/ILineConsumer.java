@@ -1,6 +1,6 @@
 package com.netstal.tools.nubs.launcher.infrastructure;
 
-public interface I_LineConsumer {
+public interface ILineConsumer {
 
    public void consumeLine(String line);
 

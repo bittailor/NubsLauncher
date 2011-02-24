@@ -9,11 +9,11 @@ import java.io.InputStreamReader;
 public class StreamPumper implements Runnable {
 
    private final BufferedReader in;
-   private I_LineConsumer consumer = null;
+   private ILineConsumer consumer = null;
 
    private static final int SIZE = 1024;
 
-   public StreamPumper(InputStream in, I_LineConsumer consumer) {
+   public StreamPumper(InputStream in, ILineConsumer consumer) {
       this.in = new BufferedReader(new InputStreamReader(in), SIZE);
       this.consumer = consumer;
    }

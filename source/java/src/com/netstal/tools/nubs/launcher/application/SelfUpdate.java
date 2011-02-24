@@ -121,7 +121,7 @@ public class SelfUpdate {
    }
    
    
-   private static class LineConsumer implements I_LineConsumer {        
+   private static class LineConsumer implements ILineConsumer {        
       List<String> lines = new LinkedList<String>();    
       @Override
       public void consumeLine(String line) {

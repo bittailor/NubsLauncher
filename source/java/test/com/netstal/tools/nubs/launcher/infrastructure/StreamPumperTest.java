@@ -33,7 +33,7 @@ public class StreamPumperTest {
       String text = "line1\nline2\nline3\n";
       InputStream in = new ByteArrayInputStream(text.getBytes());
       IMocksControl control = createControl();
-      I_LineConsumer consumer = control.createMock("consumer", I_LineConsumer.class);
+      ILineConsumer consumer = control.createMock("consumer", ILineConsumer.class);
       
       consumer.consumeLine("line1");
       consumer.consumeLine("line2");
@@ -58,7 +58,7 @@ public class StreamPumperTest {
       };
       
       IMocksControl control = createControl();
-      I_LineConsumer consumer = control.createMock("consumer", I_LineConsumer.class);
+      ILineConsumer consumer = control.createMock("consumer", ILineConsumer.class);
       
       control.replay();
       
