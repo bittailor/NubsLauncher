@@ -45,6 +45,10 @@ public class ProcessBuilderWrapper implements IProcessBuilder {
    
    @Override
    public IProcess start() throws IOException {
+      if (outputConsumer == null) {
+         return new ProcessWrapper(processBuilder);
+      }
+      
       if (errorConsumer == null) {
          return new ProcessWrapper(outputConsumer, processBuilder);
       }

@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
+import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.OutputGrabber;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
@@ -26,11 +27,13 @@ public class SelfUpdate {
    
    IConfiguration configuration;
    Provider<OutputGrabber> outputGrabberProvider;
+   Provider<IProcessBuilder> processBuilderProvider;
 
    @Inject
-   public SelfUpdate(IConfiguration configuration, Provider<OutputGrabber> outputGrabberProvider) {
+   public SelfUpdate(IConfiguration configuration, Provider<OutputGrabber> outputGrabberProvider, Provider<IProcessBuilder> processBuilderProvider) {
       this.configuration = configuration;
       this.outputGrabberProvider = outputGrabberProvider;
+      this.processBuilderProvider = processBuilderProvider;
    }
    
    public boolean selfUpdate() {   
@@ -110,8 +113,9 @@ public class SelfUpdate {
 
    private boolean launchSelfUpdate() {
       try {
-         ProcessBuilder processBuilder = new ProcessBuilder("cmd","/C","start","cmd","/C",new File(getServerDirectory(),"install.rb").getAbsolutePath(),"-u");
-         processBuilder.start();
+         processBuilderProvider.get()
+            .command("cmd","/C","start","cmd","/C",new File(getServerDirectory(),"install.rb").getAbsolutePath(),"-u")
+            .start();
          return true;
       }
       catch (IOException exception) {

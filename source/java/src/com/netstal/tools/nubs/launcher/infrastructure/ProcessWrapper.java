@@ -11,6 +11,12 @@ public class ProcessWrapper implements IProcess {
    private Thread errorThread;
    private Process process;
    
+   public ProcessWrapper(ProcessBuilder processBuilder) throws IOException {
+      this(new ILineConsumer() {
+         @Override
+         public void consumeLine(String line) {}
+      },processBuilder);
+   }
    
    public ProcessWrapper(ILineConsumer outputConsumer, ProcessBuilder processBuilder) throws IOException {
       this.outputConsumer = outputConsumer;
