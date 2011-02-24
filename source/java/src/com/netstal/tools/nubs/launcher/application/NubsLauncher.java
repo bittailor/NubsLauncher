@@ -31,6 +31,7 @@ public class NubsLauncher {
       } else {
          mainFrame.selectWorkspaceDirectory();
       }   
+      
    }
    
    private Injector createInjector() {
