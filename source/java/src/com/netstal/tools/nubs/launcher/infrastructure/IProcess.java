@@ -9,4 +9,6 @@ public interface IProcess {
    
    public int waitFor() throws InterruptedException;
 
+   public int exitValue();
+
 }

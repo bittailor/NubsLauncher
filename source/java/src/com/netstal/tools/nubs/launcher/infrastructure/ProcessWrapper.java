@@ -38,6 +38,11 @@ public class ProcessWrapper implements IProcess {
       }
       return exit;
    }
+   
+   @Override
+   public int exitValue() {
+      return process.exitValue();
+   }
     
    private void launch(ProcessBuilder processBuilder) throws IOException {
       process = processBuilder.start();
@@ -48,6 +53,8 @@ public class ProcessWrapper implements IProcess {
          errorThread.start();
       }
    }
+
+   
    
    
    

@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.netstal.tools.nubs.launcher.infrastructure.StreamPumper;
+import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
+import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 
 public class RakeTaskImporter implements IRakeTaskImporter {
 
@@ -16,26 +17,27 @@ public class RakeTaskImporter implements IRakeTaskImporter {
    
    private final String rakeOsCommand;
    private Provider<IRakeTaskParser> parserProvider;
+   private Provider<IProcessBuilder> processBuilderProvider;
    
    @Inject
-   public RakeTaskImporter(Provider<IRakeTaskParser> parserProvider, IConfiguration properties) {
-      rakeOsCommand = properties.getRakeOsCommand();
+   public RakeTaskImporter(Provider<IRakeTaskParser> parserProvider, Provider<IProcessBuilder> processBuilderProvider, IConfiguration configuration) {
+      rakeOsCommand = configuration.getRakeOsCommand();
       this.parserProvider = parserProvider;
+      this.processBuilderProvider = processBuilderProvider;
    }
 
    @Override
    public SortedMap<String, RakeTask> importTasks(File root) {
       IRakeTaskParser parser = parserProvider.get();
-      ProcessBuilder pb = new ProcessBuilder(rakeOsCommand, "-P");
-      pb.directory(root);
-      Process process;
+           
+      IProcessBuilder processBuilder = processBuilderProvider.get();
       try {
-         process = pb.start();
-         StreamPumper streamPumper = new StreamPumper(process.getInputStream(),parser); 
-         Thread pumperThread = new Thread(streamPumper);
-         pumperThread.start();
+         IProcess process = processBuilder
+            .command(rakeOsCommand,"-P")
+            .directory(root)
+            .outputConsumer(parser)
+            .start();         
          process.waitFor();
-         pumperThread.join();
          LOG.log(Level.INFO, "Rake Tasks Import Finished With " + process.exitValue());       
       }
       catch (IOException e) {
