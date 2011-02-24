@@ -11,6 +11,8 @@ import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -33,6 +35,7 @@ import com.netstal.tools.nubs.launcher.infrastructure.Version;
 public class NubsLauncherFrame extends JFrame {
  
    private static final long serialVersionUID = 1L;
+   private static Logger LOG = Logger.getLogger(NubsLauncherFrame.class.getName());
 
    private static final String LOAD_LAYER = "Load";
    private static final String MAIN_LAYER = "Main";
@@ -155,14 +158,13 @@ public class NubsLauncherFrame extends JFrame {
       
       @Override
       public void actionPerformed(ActionEvent event) {
-         System.out.println("Execute " + suggestField.getTextField().getText());
-         
+         LOG.log(Level.INFO, "Lauch Rake with " + suggestField.getTextField().getText());
          try {
             Command command = new Command(suggestField.getTextField().getText());
             launcher.launch(command);
          }
          catch (IOException exception) {
-            exception.printStackTrace();
+            LOG.log(Level.SEVERE, "Problem Launching Rake", exception);
          }
       }     
    }

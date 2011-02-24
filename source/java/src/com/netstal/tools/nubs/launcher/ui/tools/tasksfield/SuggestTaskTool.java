@@ -11,6 +11,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JList;
@@ -31,6 +33,8 @@ import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 
 public class SuggestTaskTool extends AbstractTool {
 
+   private static Logger LOG = Logger.getLogger(SuggestTaskTool.class.getName());
+   
    private IFilterChain filterChain;
    private ListModel suggestListModel;
    private JList suggestList;
@@ -136,8 +140,7 @@ public class SuggestTaskTool extends AbstractTool {
          x = modelToView.x;
       }
       catch (BadLocationException e) {
-         // this should never happen!!!
-         e.printStackTrace();
+         LOG.log(Level.WARNING, "Oops, Internal Error", e);
       }
       suggestPopup.setPreferredSize(new Dimension(getTasksField().getWidth()-x, getTasksField().getHeight()*15));
       suggestPopup.show(getTasksField(), x, getTasksField().getHeight());
@@ -186,7 +189,7 @@ public class SuggestTaskTool extends AbstractTool {
          }
       }
       catch (BadLocationException e) {
-         e.printStackTrace();
+         LOG.log(Level.WARNING, "Oops, Internal Error", e);
       }
    }
    

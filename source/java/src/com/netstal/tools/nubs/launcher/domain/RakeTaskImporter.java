@@ -3,6 +3,8 @@ package com.netstal.tools.nubs.launcher.domain;
 import java.io.File;
 import java.io.IOException;
 import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -10,6 +12,8 @@ import com.netstal.tools.nubs.launcher.infrastructure.StreamPumper;
 
 public class RakeTaskImporter implements IRakeTaskImporter {
 
+   private static Logger LOG = Logger.getLogger(RakeTaskImporter.class.getName());
+   
    private final String rakeOsCommand;
    private Provider<IRakeTaskParser> parserProvider;
    
@@ -32,15 +36,13 @@ public class RakeTaskImporter implements IRakeTaskImporter {
          pumperThread.start();
          process.waitFor();
          pumperThread.join();
-         System.out.println(process.exitValue());        
+         LOG.log(Level.INFO, "Rake Tasks Import Finished With " + process.exitValue());       
       }
       catch (IOException e) {
-         // TODO - fsc - logging - log exception.
-         e.printStackTrace();
+         LOG.log(Level.SEVERE, "Problem Importing The Rake Tasks", e);
       }
       catch (InterruptedException e) {
-         // TODO - fsc - logging - log exception.
-         e.printStackTrace();
+         LOG.log(Level.SEVERE, "Problem Importing The Rake Tasks", e);
       }
       return parser.getTasks();   
    }

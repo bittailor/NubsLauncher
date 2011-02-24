@@ -56,7 +56,6 @@ public class SelfUpdate {
          Process process = Runtime.getRuntime().exec(cmd);
          new Thread(new StreamPumper(process.getInputStream(),lineConsumer)).start();
          process.waitFor();
-         System.out.println(process.exitValue());
          if(lineConsumer.lines.isEmpty()) {
             return false;
          }
@@ -71,10 +70,10 @@ public class SelfUpdate {
       } catch (NumberFormatException e) {
       }
       catch (IOException e) {
-         e.printStackTrace();
+         LOG.log(Level.WARNING, "Problem Parsing Version Number", e);
       }
       catch (InterruptedException e) {
-         e.printStackTrace();
+         LOG.log(Level.WARNING, "Problem Parsing Version Number", e);
       }
       
       return false;
@@ -116,7 +115,7 @@ public class SelfUpdate {
          return true;
       }
       catch (IOException exception) {
-         exception.printStackTrace();
+         LOG.log(Level.SEVERE, "Failed To Launch Self Update", exception);
       }
       return false;
    }

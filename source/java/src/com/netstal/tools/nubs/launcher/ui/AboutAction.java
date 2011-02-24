@@ -4,13 +4,18 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 public class AboutAction extends AbstractAction {
+  
    private static final long serialVersionUID = 1L;
+   private static Logger LOG = Logger.getLogger(AboutAction.class.getName());
+   
    private Component component;
    private String version;
 
@@ -43,8 +48,7 @@ public class AboutAction extends AbstractAction {
                desktop.browse(new URI("http://fuewiki.nmag.ch/FuEWiki/index.php5/NUBS_Launcher"));
             }
             catch (Exception exception) {
-               // TODO Auto-generated catch block
-               exception.printStackTrace();
+               LOG.log(Level.WARNING, "Could Not Launch Wiki Link", e);
             }
          }
       }

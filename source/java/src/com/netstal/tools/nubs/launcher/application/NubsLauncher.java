@@ -39,6 +39,8 @@ import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.SuggestTaskTool;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.ToolsFactory;
 
 public class NubsLauncher {
+   
+   private static Logger LOG = Logger.getLogger(NubsLauncher.class.getName());
 
    public NubsLauncher() {
       Injector injector = createInjector();
@@ -101,16 +103,16 @@ public class NubsLauncher {
          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       }
       catch (ClassNotFoundException exception) {
-         exception.printStackTrace();
+         LOG.log(Level.WARNING, "Could Not Set Look And Feel", exception);
       }
       catch (InstantiationException exception) {
-         exception.printStackTrace();
+         LOG.log(Level.WARNING, "Could Not Set Look And Feel", exception);
       }
       catch (IllegalAccessException exception) {
-         exception.printStackTrace();
+         LOG.log(Level.WARNING, "Could Not Set Look And Feel", exception);
       }
       catch (UnsupportedLookAndFeelException exception) {
-         exception.printStackTrace();
+         LOG.log(Level.WARNING, "Could Not Set Look And Feel", exception);
       }
       
       javax.swing.SwingUtilities.invokeLater(new Runnable() {
