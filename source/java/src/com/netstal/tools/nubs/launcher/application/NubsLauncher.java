@@ -67,6 +67,7 @@ public class NubsLauncher {
       Injector injector = Guice.createInjector(new AbstractModule(){
          @Override
          protected void configure() {
+            
             bind(IConsoleLauncher.class).to(ConsoleLauncher.class);
             
             bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);
