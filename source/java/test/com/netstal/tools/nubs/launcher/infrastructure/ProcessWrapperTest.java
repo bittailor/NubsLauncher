@@ -114,6 +114,8 @@ public class ProcessWrapperTest {
    
    @Test
    public void testProcessInToOutput() throws IOException, InterruptedException {
+      outputConsumer.consumeLine("just a line");
+      
       control.replay();
       
       ProcessBuilderWrapper processBuilder = new ProcessBuilderWrapper();

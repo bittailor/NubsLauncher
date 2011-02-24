@@ -6,9 +6,9 @@ import java.io.OutputStream;
 public class ProcessWrapper implements IProcess {
 
    private ILineConsumer outputConsumer;
-   private Thread outputThread;
+   private ThreadWrapper outputThread;
    private ILineConsumer errorConsumer;
-   private Thread errorThread;
+   private ThreadWrapper errorThread;
    private Process process;
    
    public ProcessWrapper(ProcessBuilder processBuilder) throws IOException {
@@ -52,10 +52,10 @@ public class ProcessWrapper implements IProcess {
     
    private void launch(ProcessBuilder processBuilder) throws IOException {
       process = processBuilder.start();
-      outputThread = new Thread(new StreamPumper(process.getInputStream(), outputConsumer));
+      outputThread = new ThreadWrapper(new StreamPumper(process.getInputStream(), outputConsumer));
       outputThread.start();
       if (errorConsumer != null) {
-         errorThread = new Thread(new StreamPumper(process.getErrorStream(), errorConsumer));
+         errorThread = new ThreadWrapper(new StreamPumper(process.getErrorStream(), errorConsumer));
          errorThread.start();
       }
    }
