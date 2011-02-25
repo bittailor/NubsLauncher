@@ -58,7 +58,7 @@ public class NubsLauncher {
             bind(SuggestTaskTool.class);
             bind(CommandHistoryTool.class);
             bind(LaunchRakeTool.class);
-            bind(OutputGrabber.class);
+            bind(ProcessOutputCapture.class);
          }   
       });
       

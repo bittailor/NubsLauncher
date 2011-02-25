@@ -13,7 +13,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
-import com.netstal.tools.nubs.launcher.infrastructure.OutputGrabber;
+import com.netstal.tools.nubs.launcher.infrastructure.ProcessOutputCapture;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 
@@ -26,11 +26,11 @@ public class SelfUpdate {
    static final String ENABLE_AUTO_UPDATE = "update.EnableAutoUpdate";
    
    IConfiguration configuration;
-   Provider<OutputGrabber> outputGrabberProvider;
+   Provider<ProcessOutputCapture> outputGrabberProvider;
    Provider<IProcessBuilder> processBuilderProvider;
 
    @Inject
-   public SelfUpdate(IConfiguration configuration, Provider<OutputGrabber> outputGrabberProvider, Provider<IProcessBuilder> processBuilderProvider) {
+   public SelfUpdate(IConfiguration configuration, Provider<ProcessOutputCapture> outputGrabberProvider, Provider<IProcessBuilder> processBuilderProvider) {
       this.configuration = configuration;
       this.outputGrabberProvider = outputGrabberProvider;
       this.processBuilderProvider = processBuilderProvider;

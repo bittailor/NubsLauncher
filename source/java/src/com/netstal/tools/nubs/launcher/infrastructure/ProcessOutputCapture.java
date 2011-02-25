@@ -9,17 +9,17 @@ import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 
-public class OutputGrabber {
+public class ProcessOutputCapture {
 
-   private static Logger LOG = Logger.getLogger(OutputGrabber.class.getName());
+   private static Logger LOG = Logger.getLogger(ProcessOutputCapture.class.getName());
    private IProcessBuilder processBuilder;
    
    @Inject
-   public OutputGrabber(IProcessBuilder processBuilder) {
+   public ProcessOutputCapture(IProcessBuilder processBuilder) {
       this.processBuilder = processBuilder;
    }
    
-   public OutputGrabber directory(File directory) {
+   public ProcessOutputCapture directory(File directory) {
       processBuilder.directory(directory);
       return this;
    }
@@ -40,10 +40,10 @@ public class OutputGrabber {
          process.waitFor();
       }
       catch (IOException e) {
-         LOG.log(Level.WARNING ,"Failed to grab output of " + commandString(command), e);
+         LOG.log(Level.WARNING ,"Failed to grab output of '" + commandString(command) + "'", e);
       }
       catch (InterruptedException e) {
-         LOG.log(Level.WARNING ,"Failed to grab output of " + commandString(command), e);
+         LOG.log(Level.WARNING ,"Failed to grab output of '" + commandString(command) + "'", e);
       }        
       return lines;
    }
