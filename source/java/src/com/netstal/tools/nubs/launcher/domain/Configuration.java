@@ -31,6 +31,10 @@ public class Configuration implements IConfiguration {
       }
       return "rake";
    }
+	
+	public static boolean isWindows() {
+      return System.getProperty("os.name").toLowerCase().indexOf( "windows" ) >= 0;
+   }
 
    @Override
    public String get(String key) {
@@ -110,11 +114,5 @@ public class Configuration implements IConfiguration {
       }
    }
    
-   
-   
-	
-	private boolean isWindows() {
-		return System.getProperty("os.name").toLowerCase().indexOf( "windows" ) >= 0;
-	}
 
 }

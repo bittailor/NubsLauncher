@@ -8,7 +8,8 @@ package com.netstal.tools.nubs.launcher.domain;
 
 public class Command {
    
-   private static final String RAKE = "rake";
+   // TODO fsc fix !
+   private static final String RAKE = isWindows() ? "rake.bat" : "rake";
    
    private final String command;
 
@@ -18,7 +19,7 @@ public class Command {
       }
       this.command = command;
    }
-   
+
    public String[] command() {
       return new String[]{RAKE,command.trim()}; 
    }
@@ -48,6 +49,10 @@ public class Command {
       Command other = (Command) obj;
       if (!command.equals(other.command)) return false;
       return true;
+   }
+   
+   private static boolean isWindows() {
+      return Configuration.isWindows();
    }
    
 }
