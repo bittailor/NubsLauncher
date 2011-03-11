@@ -9,7 +9,7 @@ package com.netstal.tools.nubs.launcher.domain;
 public class Command {
    
    // TODO fsc fix !
-   private static final String RAKE = isWindows() ? "rake.bat" : "rake";
+   public static final String RAKE = isWindows() ? "rake.bat" : "rake";
    
    private final String command;
 

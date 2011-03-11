@@ -37,7 +37,7 @@ public class RakeOutputParser implements IRakeBuildOutputParser {
 
    @Override
    public void consumeLine(String line) {
-      LOG.log(Level.INFO, ">"+line);
+      LOG.log(Level.FINEST, ">"+line);
       
       Matcher matcher = RETRY_PATTERN.matcher(line);
       if (matcher.matches()) {

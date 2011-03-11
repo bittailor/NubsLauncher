@@ -35,8 +35,6 @@ public class JobListModel extends AbstractListModel {
       rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {     
          @Override
          public void notifyEvent(final IRakeJob job) {
-            LOG.log(Level.INFO, "fireContentsChanged -> " + job.getCommand() + " --> " + job.getCurrentTask());
-            System.out.println();
             SwingUtilities.invokeLater(new Runnable() {               
                @Override
                public void run() {

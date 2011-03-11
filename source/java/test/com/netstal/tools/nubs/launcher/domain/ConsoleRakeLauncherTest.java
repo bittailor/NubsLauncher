@@ -34,7 +34,7 @@ public class ConsoleRakeLauncherTest {
       
       expect(workspace.getRoot()).andReturn(directory);
       commandHistory.push(command);
-      consoleLauncher.launch("rake " + command.toString(), directory);
+      consoleLauncher.launch(Command.RAKE+ " " + command.toString(), directory);
       
       control.replay();
       
