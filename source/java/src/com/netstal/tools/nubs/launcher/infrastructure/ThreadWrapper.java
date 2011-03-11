@@ -9,6 +9,10 @@ public class ThreadWrapper {
    private Thread thread;
    
    public ThreadWrapper(final Runnable runnable) {
+      this(runnable,"ThreadWrapper-NoName");
+   }
+   
+   public ThreadWrapper(final Runnable runnable, String name) {
       runtimeExceptionReference = new AtomicReference<RuntimeException>();
       errorReference = new AtomicReference<Error>();
       thread = new Thread(new Runnable() {
@@ -24,7 +28,7 @@ public class ThreadWrapper {
             }
             
          }
-      });
+      },name);
    }
    
    public void start() {

@@ -41,7 +41,7 @@ public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
    
    private void loadTasks() {
       tasks = importer.importTasks(workspaceRoot);
-      notify(this);
+      notifyEventListeners(this);
    }
    
 }

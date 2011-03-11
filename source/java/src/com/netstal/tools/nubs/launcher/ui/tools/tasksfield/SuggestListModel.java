@@ -26,7 +26,7 @@ public class SuggestListModel extends AbstractListModel {
       oldSize = getTasks().size();
       filterChain.addListener(new IEventListener<IFilterChain>() {
          @Override
-         public void notify(IFilterChain source) {
+         public void notifyEvent(IFilterChain source) {
             fireIntervalRemoved(this, 0, oldSize);
             fireIntervalAdded(this, 0, getTasks().size());
             oldSize = getTasks().size(); 

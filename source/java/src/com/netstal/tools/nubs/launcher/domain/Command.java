@@ -19,6 +19,10 @@ public class Command {
       this.command = command;
    }
    
+   public String[] command() {
+      return new String[]{RAKE,command.trim()}; 
+   }
+   
    public String rakeCmdLine() {
       return RAKE + " " + command; 
    }

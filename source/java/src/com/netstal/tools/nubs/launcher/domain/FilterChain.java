@@ -24,7 +24,7 @@ public class FilterChain extends EventSource<IFilterChain> implements IFilterCha
       filteredTasks.addAll(workspace.getTasks());
       workspace.addListener(new IEventListener<IWorkspace>() {
          @Override
-         public void notify(IWorkspace source) {
+         public void notifyEvent(IWorkspace source) {
             filter();
          }
       });
@@ -53,6 +53,6 @@ public class FilterChain extends EventSource<IFilterChain> implements IFilterCha
             filteredTasks.add(task);                     
          }
       }
-      notify(this);
+      notifyEventListeners(this);
    }
 }

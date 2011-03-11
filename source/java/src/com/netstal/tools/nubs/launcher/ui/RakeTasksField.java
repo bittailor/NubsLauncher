@@ -1,5 +1,6 @@
 package com.netstal.tools.nubs.launcher.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,9 +51,10 @@ public class RakeTasksField extends JPanel {
    }
    
    private void createUi() {
+      this.setLayout(new BorderLayout());
       tasksField = new JTextField();
       tasksField.setPreferredSize(new Dimension(1000,tasksField.getPreferredSize().height));
-      add(tasksField);  
+      add(tasksField,BorderLayout.NORTH);  
    }
 
    private void createActions() {     

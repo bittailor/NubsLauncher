@@ -2,6 +2,8 @@ package com.netstal.tools.nubs.launcher.domain;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,6 +11,8 @@ import com.google.inject.Inject;
 
 public class RakeOutputParser implements IRakeBuildOutputParser {
 
+   private static Logger LOG = Logger.getLogger(RakeOutputParser.class.getName());
+   
       // --> Try build Fail_build_dpu_only again (y)es (n)o or just (i)gnore it and continue? [y|n|i]>
    private static Pattern RETRY_PATTERN = Pattern.compile("--> Try build (\\S+) again \\(y\\)es \\(n\\)o or just \\(i\\)gnore it and continue\\? \\[y\\|n\\|i\\]>");
       // ** Execute ProjectOne_build_ipc_only
@@ -33,6 +37,8 @@ public class RakeOutputParser implements IRakeBuildOutputParser {
 
    @Override
    public void consumeLine(String line) {
+      LOG.log(Level.INFO, ">"+line);
+      
       Matcher matcher = RETRY_PATTERN.matcher(line);
       if (matcher.matches()) {
          retryDetected(matcher);

@@ -41,13 +41,16 @@ public class NubsLauncher {
             
             bind(IConsoleLauncher.class).to(ConsoleLauncher.class);
             
-            bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);
+            //bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);
+            bind(IRakeLauncher.class).to(InternalRakeLauncher.class);
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
             bind(IProcessBuilder.class).to(ProcessBuilderWrapper.class);
             bind(IRakeBuildOutputParser.class).to(RakeOutputParser.class);
+            bind(IRakeJob.class).to(RakeJob.class);
             
             
+            bind(IRakeJobRepository.class).to(RakeJobRepository.class).in(Singleton.class);
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);
             bind(ICommandHistory.class).to(CommandHistory.class).in(Singleton.class);

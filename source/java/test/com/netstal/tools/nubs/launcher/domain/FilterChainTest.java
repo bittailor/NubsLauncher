@@ -159,7 +159,7 @@ public class FilterChainTest {
       assertArrayEquals(new RakeTask[]{projectOne,projectOne_build_dpu_only}, 
                         filterChain.getFilteredTasks().toArray(new RakeTask[]{}));
       
-      listener.getValue().notify(workspace);
+      listener.getValue().notifyEvent(workspace);
       
       assertArrayEquals(new RakeTask[]{projectOne}, 
                filterChain.getFilteredTasks().toArray(new RakeTask[]{}));

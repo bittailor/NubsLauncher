@@ -2,6 +2,11 @@ require 'patch'
 
 Rake.application.options.trace = true
 
+def useTime()
+	$stdout.flush
+	sleep(2)
+end
+
 # -----------------------------------------------------------------------
 
 task :ProjectOne_generate
@@ -33,6 +38,31 @@ task :Application_deploy
 # -----------------------------------------------------------------------
 
 task :Fail_build_dpu_only do
-	fail("Just Faile")
+	fail("Just Fail")
 end
 
+# -----------------------------------------------------------------------
+
+task :TimeOne do
+	useTime()	
+end
+
+task :TimeTwo => [:TimeOne]  do
+	useTime()
+end
+
+task :Time => [:TimeTwo]  do
+    useTime()
+end
+
+# -----------------------------------------------------------------------
+
+failOnce_A_guard = true
+task :FailOnce_A => [:TimeTwo] do
+	if(failOnce_A_guard)		
+		failOnce_A_guard = false
+		fail("FailOnce")
+	end			
+end 
+
+task :FailOnce => [:FailOnce_A] 

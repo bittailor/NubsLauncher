@@ -21,22 +21,22 @@ public class EventSourceTest {
       IEventListener<String> listener1 = createListenerMock(control);
       IEventListener<String> listener2 = createListenerMock(control);
       
-      listener1.notify("1");
-      listener1.notify("2");
-      listener2.notify("2");
-      listener2.notify("3");
+      listener1.notifyEvent("1");
+      listener1.notifyEvent("2");
+      listener2.notifyEvent("2");
+      listener2.notifyEvent("3");
       
       control.replay();
       EventSource<String> eventSource = new EventSource<String>();
       
       eventSource.addListener(listener1);
-      eventSource.notify("1");
+      eventSource.notifyEventListeners("1");
       eventSource.addListener(listener2);
-      eventSource.notify("2");
+      eventSource.notifyEventListeners("2");
       eventSource.removeListener(listener1);
-      eventSource.notify("3");
+      eventSource.notifyEventListeners("3");
       eventSource.removeListener(listener2);
-      eventSource.notify("4");
+      eventSource.notifyEventListeners("4");
       
       control.verify();
    }

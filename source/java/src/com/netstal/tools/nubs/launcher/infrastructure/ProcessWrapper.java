@@ -2,6 +2,7 @@ package com.netstal.tools.nubs.launcher.infrastructure;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 public class ProcessWrapper implements IProcess {
 
@@ -10,6 +11,7 @@ public class ProcessWrapper implements IProcess {
    private ILineConsumer errorConsumer;
    private ThreadWrapper errorThread;
    private Process process;
+   private PrintStream out;
    
    public ProcessWrapper(ProcessBuilder processBuilder) throws IOException {
       this(new ILineConsumer() {
@@ -42,6 +44,7 @@ public class ProcessWrapper implements IProcess {
       if (errorThread != null) {
          errorThread.join();
       }
+      out.close();
       return exit;
    }
    
@@ -49,15 +52,21 @@ public class ProcessWrapper implements IProcess {
    public int exitValue() {
       return process.exitValue();
    }
-    
+      
+   @Override
+   public PrintStream out() {
+      return out;
+   }
+
    private void launch(ProcessBuilder processBuilder) throws IOException {
       process = processBuilder.start();
-      outputThread = new ThreadWrapper(new StreamPumper(process.getInputStream(), outputConsumer));
+      outputThread = new ThreadWrapper(new StreamPumper(process.getInputStream(), outputConsumer),"OutputPumper");
       outputThread.start();
       if (errorConsumer != null) {
-         errorThread = new ThreadWrapper(new StreamPumper(process.getErrorStream(), errorConsumer));
+         errorThread = new ThreadWrapper(new StreamPumper(process.getErrorStream(), errorConsumer),"ErrorPumper");
          errorThread.start();
       }
+      out = new PrintStream(process.getOutputStream());
    }
 
    

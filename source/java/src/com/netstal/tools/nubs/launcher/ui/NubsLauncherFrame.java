@@ -55,18 +55,25 @@ public class NubsLauncherFrame extends JFrame {
 
    private RunRakeAction runRakeAction;
    private ChangeWorkspaceAction changeWorkspaceAction;
+   private JobPanel jobPanel;
 
    
    @Inject
-   public NubsLauncherFrame(IWorkspace workspace, RakeTasksField rakeTasksField, IRakeLauncher launcher) {
+   public NubsLauncherFrame(IWorkspace workspace, 
+            RakeTasksField rakeTasksField, 
+            IRakeLauncher launcher,
+            JobPanel jobPanel) {
       super(PREFIX);
       this.workspace = workspace;
       this.launcher = launcher;
       this.suggestField = rakeTasksField;
+      this.jobPanel = jobPanel;
+      
       createUi();
+      
       this.workspace.addListener(new IEventListener<IWorkspace>() {
          @Override
-         public void notify(IWorkspace source) {
+         public void notifyEvent(IWorkspace source) {
             SwingUtilities.invokeLater(new Runnable() {
                @Override
                public void run() {
@@ -128,6 +135,8 @@ public class NubsLauncherFrame extends JFrame {
       toolBar.add(workspaceLabel);
      
       rootPanel.add(suggestField);
+      
+      rootPanel.add(jobPanel,BorderLayout.SOUTH);
       
       LoadTasksPanel loadTasksScreen = new LoadTasksPanel();
       layersPanel.add(loadTasksScreen,LOAD_LAYER);  

@@ -26,9 +26,9 @@ public class EventSource<Source> implements IEventSource<Source> {
       sources.remove(listener);
    }
    
-   public void notify(Source source) {
+   public void notifyEventListeners(Source source) {
       for (IEventListener<Source> listener : sources) {
-         listener.notify(source);
+         listener.notifyEvent(source);
       }
    }
   
