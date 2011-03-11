@@ -38,6 +38,9 @@ task :Application_deploy
 # -----------------------------------------------------------------------
 
 task :Fail_build_dpu_only do
+	useTime()
+	puts "Just Fail ==> Problem xyz"
+    $stdout.flush
 	fail("Just Fail")
 end
 

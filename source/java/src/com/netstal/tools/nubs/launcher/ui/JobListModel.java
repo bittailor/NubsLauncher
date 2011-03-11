@@ -1,5 +1,6 @@
 package com.netstal.tools.nubs.launcher.ui;
 
+import java.awt.Desktop;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +53,22 @@ public class JobListModel extends AbstractListModel {
                   
                });
             }
+            if (job.getState().equals(State.FINISHED_FAILURE) || job.getState().equals(State.FINISHED_EXCEPTION)) {
+               SwingUtilities.invokeLater(new Runnable() {               
+                  @Override
+                  public void run() {
+                     Desktop desktop = Desktop.getDesktop();
+                     try {
+                        desktop.open(job.getLogFile());
+                     }
+                     catch (Exception exception) {
+                        LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
+                     }
+                  }
+
+                  
+               });
+            }
          }
       });
       
@@ -68,11 +85,11 @@ public class JobListModel extends AbstractListModel {
                new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
                options,
                options[0]);
-      if(n==0) {
+      if (n == 0) {
          job.retry();
-      } else if(n==1) {
+      } else if (n == 1) {
          job.ignore();
-      } else {
+      } else if (n == 2) {
          job.fail();
       }
    }

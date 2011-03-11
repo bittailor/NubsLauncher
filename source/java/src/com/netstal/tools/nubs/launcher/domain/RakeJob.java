@@ -1,15 +1,19 @@
 package com.netstal.tools.nubs.launcher.domain;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.infrastructure.ILineConsumer;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
+import com.netstal.tools.nubs.launcher.infrastructure.Stream;
 
-public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputListener, IRakeJob {
+public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputListener, IRakeJob, ILineConsumer {
 
    private static Logger LOG = Logger.getLogger(RakeJob.class.getName());
    
@@ -21,6 +25,8 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    private IRakeBuildOutputParser outputParser;
    private boolean retry;
    private String currentTask;
+   private File logFile;
+   private PrintWriter log;
    
    
    @Inject
@@ -42,10 +48,13 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public int launch(){
       outputParser.addListener(this);
       try {
+         logFile = File.createTempFile("NubsRakeJob", "Log.txt");
+         logFile.deleteOnExit();
+         log = new PrintWriter(logFile);
          process = processBuilderProvider.get()
             .command(command.command())
             .directory(workspace.getRoot())
-            .outputConsumer(outputParser)
+            .outputConsumer(this)
             .start();
          setState(State.BUILDING);
          int exitValue = process.waitFor();
@@ -64,6 +73,9 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       }
       catch (InterruptedException e) {
          LOG.log(Level.SEVERE, "Probelm waiting for rake to finish", e);
+      } finally {
+         Stream.close(log);
+         log = null;
       }
       outputParser.removeListener(this);
       setState(State.FINISHED_EXCEPTION);
@@ -84,6 +96,13 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public Command getCommand() {
       return command;
    }
+   
+   
+
+   @Override
+   public File getLogFile() {
+      return logFile;
+   }
 
    private void setState(State newState) {
       state = newState; 
@@ -92,13 +111,21 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    
    @Override
    public void retry() {
+      if(isFinished()) {
+         return;
+      }
       setState(State.BUILDING);
       process.out().println("y");
       process.out().flush();   
    }
    
+   
+
    @Override
    public void ignore() {
+      if(isFinished()) {
+         return;
+      }
       setState(State.BUILDING);
       process.out().println("i");
       process.out().flush();
@@ -106,6 +133,9 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    
    @Override
    public void fail() {
+      if(isFinished()) {
+         return;
+      }
       setState(State.BUILDING);
       process.out().println("n");
       process.out().flush();
@@ -130,5 +160,37 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public String toString() {
       return "Rake Job " + command  + " " + state;
    }
+
+   @Override
+   public void consumeLine(String line) {
+      if (log != null) {
+         log.println(line);
+         log.flush();
+      }
+      outputParser.consumeLine(line);
+   }
+   
+   @Override
+   public boolean isFinished() {
+      switch (state) {
+         case FINISHED_EXCEPTION:
+         case FINISHED_FAILURE:
+         case FINISHED_SUCESSFULLY:
+            return true; 
+         
+      }
+      return false;
+   }
+
+   @Override
+   public void dispose() {
+      if (logFile != null) {
+         if (!logFile.delete()) {
+            LOG.log(Level.WARNING, "Could not delete log file of rake job on dispose");
+         }
+      }
+   }
+   
+   
    
 }

@@ -1,5 +1,6 @@
 package com.netstal.tools.nubs.launcher.domain;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,6 +47,18 @@ public class RakeJobRepository extends EventSource<IRakeJobRepository> implement
    @Override
    public void notifyEvent(IRakeJob source) {
       jobsEventSource.notifyEventListeners(source);    
+   }
+
+   @Override
+   public void clearFinished() {
+      for (IRakeJob job : new ArrayList<IRakeJob>(jobs)) {
+         if (job.isFinished()) {
+            jobs.remove(job);
+            job.dispose();
+         }
+      }
+      notifyEventListeners(this);
+      
    }
    
 }
