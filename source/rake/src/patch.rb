@@ -18,8 +18,9 @@ module Rake
             puts ""
             answer = nil
             begin
-               print "--> Try build #{name} again (y)es (n)o or just (i)gnore it and continue? [y|n|i]>"
-            answer = $stdin.gets
+               puts "--> Try build #{name} again (y)es (n)o or just (i)gnore it and continue? [y|n|i]>"
+               $stdout.flush
+               answer = $stdin.gets
                answer.strip!
             end while !["y","n","i"].include?(answer)
             if answer == "y"

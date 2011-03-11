@@ -26,7 +26,7 @@ public class RakeJobRepository extends EventSource<IRakeJobRepository> implement
    @Override
    public void add(IRakeJob job) {
       job.addListener(this);
-      jobs.add(job);
+      jobs.add(0,job);
       notifyEventListeners(this);
    }
 

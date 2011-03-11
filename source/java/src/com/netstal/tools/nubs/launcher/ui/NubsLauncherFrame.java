@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -55,19 +56,19 @@ public class NubsLauncherFrame extends JFrame {
 
    private RunRakeAction runRakeAction;
    private ChangeWorkspaceAction changeWorkspaceAction;
-   private JobPanel jobPanel;
+   private JComponent launcherPanel;
 
    
    @Inject
    public NubsLauncherFrame(IWorkspace workspace, 
             RakeTasksField rakeTasksField, 
             IRakeLauncher launcher,
-            JobPanel jobPanel) {
+            @LauncherPanel JComponent launcherPanel) {
       super(PREFIX);
       this.workspace = workspace;
       this.launcher = launcher;
       this.suggestField = rakeTasksField;
-      this.jobPanel = jobPanel;
+      this.launcherPanel = launcherPanel;
       
       createUi();
       
@@ -136,7 +137,7 @@ public class NubsLauncherFrame extends JFrame {
      
       rootPanel.add(suggestField);
       
-      rootPanel.add(jobPanel,BorderLayout.SOUTH);
+      rootPanel.add(launcherPanel,BorderLayout.SOUTH);
       
       LoadTasksPanel loadTasksScreen = new LoadTasksPanel();
       layersPanel.add(loadTasksScreen,LOAD_LAYER);  
