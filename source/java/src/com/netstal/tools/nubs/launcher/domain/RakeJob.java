@@ -29,6 +29,7 @@ public class RakeJob implements IRakeBuildOutputListener {
       this.workspace = workspace;
       this.outputParser = outputParser;
       this.listeners = new LinkedList<IRakeJobListener>();
+      this.state = State.IDLE;
    }
 
    public void command(Command command) {
