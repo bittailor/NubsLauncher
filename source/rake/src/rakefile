@@ -69,3 +69,8 @@ task :FailOnce_A => [:TimeTwo] do
 end 
 
 task :FailOnce => [:FailOnce_A] 
+
+
+task :ShowVariable do 
+  puts ENV["bjam_targets"]
+end
