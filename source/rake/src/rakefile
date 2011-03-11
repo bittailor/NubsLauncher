@@ -28,7 +28,7 @@ task :ProjectTwo_build_dpu_only  do
 end
 task :ProjectTwo => [:ProjectTwo_generate,:ProjectTwo_build_ipc_only,:ProjectTwo_build_dpu_only]
 
-task task :default => [:ProjectTwo]
+task :default => [:ProjectTwo]
 
 # -----------------------------------------------------------------------
 
