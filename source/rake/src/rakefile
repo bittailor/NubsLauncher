@@ -1,18 +1,26 @@
+require 'patch'
+
 Rake.application.options.trace = true
 
 # -----------------------------------------------------------------------
 
 task :ProjectOne_generate
-task :ProjectOne_build_ipc_only
+task :ProjectOne_build_ipc_only do 
+	puts "Doing the work of ProjectOne_build_ipc_only"
+end
 task :ProjectOne => [:ProjectOne_generate,:ProjectOne_build_ipc_only]
 
 # -----------------------------------------------------------------------
 
-task task :default => [:ProjectOne]
+task :default => [:ProjectOne]
 
 task :ProjectTwo_generate
-task :ProjectTwo_build_ipc_only
-task :ProjectTwo_build_dpu_only
+task :ProjectTwo_build_ipc_only  do 
+	puts "Doing the work of ProjectTwo_build_ipc_only"
+end
+task :ProjectTwo_build_dpu_only  do 
+	puts "Doing the work of ProjectTwo_build_dpu_only"
+end
 task :ProjectTwo => [:ProjectTwo_generate,:ProjectTwo_build_ipc_only,:ProjectTwo_build_dpu_only]
 
 task task :default => [:ProjectTwo]
@@ -21,4 +29,10 @@ task task :default => [:ProjectTwo]
 
 task :Application_generate
 task :Application_deploy
+
+# -----------------------------------------------------------------------
+
+task :Fail_build_dpu_only do
+	fail("Just Faile")
+end
 

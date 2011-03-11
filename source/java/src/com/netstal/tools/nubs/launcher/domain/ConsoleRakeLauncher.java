@@ -14,7 +14,6 @@ import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 
 public class ConsoleRakeLauncher implements IRakeLauncher {
 
-   private static final String RAKE = "rake ";
    private IConsoleLauncher consoleLauncher;
    private ICommandHistory commandHistory;
    private IWorkspace workspace;
@@ -29,7 +28,7 @@ public class ConsoleRakeLauncher implements IRakeLauncher {
    @Override
    public void launch(Command command) throws IOException {
       commandHistory.push(command);
-      consoleLauncher.launch(RAKE+command.toString(), workspace.getRoot());
+      consoleLauncher.launch(command.rakeCmdLine(), workspace.getRoot());
    }
    
 }

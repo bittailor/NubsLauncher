@@ -45,6 +45,8 @@ public class NubsLauncher {
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
             bind(IProcessBuilder.class).to(ProcessBuilderWrapper.class);
+            bind(IRakeBuildOutputParser.class).to(RakeOutputParser.class);
+            
             
             bind(IWorkspace.class).to(Workspace.class).in(Singleton.class) ; 
             bind(IFilterChain.class).to(FilterChain.class).in(Singleton.class);

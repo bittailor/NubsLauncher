@@ -7,7 +7,9 @@
 package com.netstal.tools.nubs.launcher.domain;
 
 public class Command {
-
+   
+   private static final String RAKE = "rake";
+   
    private final String command;
 
    public Command(String command) {
@@ -15,6 +17,10 @@ public class Command {
          throw new IllegalArgumentException("command can not be null");
       }
       this.command = command;
+   }
+   
+   public String rakeCmdLine() {
+      return RAKE + " " + command; 
    }
 
    @Override
