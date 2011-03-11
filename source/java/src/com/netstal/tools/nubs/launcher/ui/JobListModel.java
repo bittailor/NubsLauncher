@@ -9,8 +9,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import com.netstal.tools.nubs.launcher.domain.IEventListener;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.*;
 import com.netstal.tools.nubs.launcher.domain.IRakeJob.State;
 import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 
@@ -19,10 +18,12 @@ public class JobListModel extends AbstractListModel {
    private static Logger LOG = Logger.getLogger(JobListModel.class.getName());
    
    private IRakeJobRepository rakeJobRepository;
+   private IWorkspace workspace;
    private int oldSize;
 
-   public JobListModel(IRakeJobRepository rakeJobRepository) {
+   public JobListModel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
       this.rakeJobRepository = rakeJobRepository;
+      this.workspace = workspace;
       oldSize = getSize();
       rakeJobRepository.addListener(new IEventListener<IRakeJobRepository>() {
          @Override
@@ -76,8 +77,9 @@ public class JobListModel extends AbstractListModel {
       Object[] options = {"Retry","Ignore","Fail"};
       int n = JOptionPane.showOptionDialog(null,
                "<html>" +
-               "<b> Task " +  job.getCurrentTask() + " failed!</b>",
-               "NUBS Launcher - Task Failed",
+               "Task failed:<br/>"+
+               "<b>" +  job.getCurrentTask() + "</b><br/>",
+               "NUBS Launcher @ " + workspace.getRoot().getName(),
                JOptionPane.YES_NO_OPTION,
                JOptionPane.INFORMATION_MESSAGE,
                new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),

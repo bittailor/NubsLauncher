@@ -15,14 +15,14 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
 import com.google.inject.Inject;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob;
-import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
+import com.netstal.tools.nubs.launcher.domain.*;
 
 public class JobPanel extends JPanel {
 
    private static Logger LOG = Logger.getLogger(JobPanel.class.getName());
    
    private IRakeJobRepository rakeJobRepository;
+   private IWorkspace workspace;
    private JToolBar toolBar;
    private JList jobs;
 
@@ -33,15 +33,16 @@ public class JobPanel extends JPanel {
    private ClearAction clearAction;   
    
    @Inject
-   public JobPanel(IRakeJobRepository rakeJobRepository) {
+   public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
       this.rakeJobRepository = rakeJobRepository;
+      this.workspace = workspace;
       createUi();
    }
 
    private void createUi() {
       setLayout(new BorderLayout());
       setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
-      jobs = new JList(new JobListModel(rakeJobRepository));
+      jobs = new JList(new JobListModel(rakeJobRepository,workspace));
       jobs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       jobs.setCellRenderer(new JobRenderer());
       
