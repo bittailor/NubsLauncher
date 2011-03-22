@@ -1,29 +1,20 @@
 package com.netstal.tools.nubs.launcher.ui;
 
-import java.awt.Desktop;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.swing.AbstractListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import com.netstal.tools.nubs.launcher.domain.*;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob.State;
+import com.netstal.tools.nubs.launcher.domain.IEventListener;
+import com.netstal.tools.nubs.launcher.domain.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 
 public class JobListModel extends AbstractListModel {
   
-   private static Logger LOG = Logger.getLogger(JobListModel.class.getName());
    
    private IRakeJobRepository rakeJobRepository;
-   private IWorkspace workspace;
    private int oldSize;
 
-   public JobListModel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
+   public JobListModel(IRakeJobRepository rakeJobRepository) {
       this.rakeJobRepository = rakeJobRepository;
-      this.workspace = workspace;
       oldSize = getSize();
       rakeJobRepository.addListener(new IEventListener<IRakeJobRepository>() {
          @Override
@@ -42,58 +33,11 @@ public class JobListModel extends AbstractListModel {
                   fireContentsChanged(JobListModel.this, 0, getSize());                             
                }
             });
-            if (job.getState().equals(State.FAILED)) {
-               SwingUtilities.invokeLater(new Runnable() {               
-                  @Override
-                  public void run() {
-                     showRetryGui(job);
-                  }
-
-                  
-               });
-            }
-            if (job.getState().equals(State.FINISHED_FAILURE) || job.getState().equals(State.FINISHED_EXCEPTION)) {
-               SwingUtilities.invokeLater(new Runnable() {               
-                  @Override
-                  public void run() {
-                     Desktop desktop = Desktop.getDesktop();
-                     try {
-                        desktop.open(job.getLogFile());
-                     }
-                     catch (Exception exception) {
-                        LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
-                     }
-                  }
-
-                  
-               });
-            }
          }
       });
       
    }
    
-   private void showRetryGui(IRakeJob job) {
-      Object[] options = {"Retry","Ignore","Fail"};
-      int n = JOptionPane.showOptionDialog(null,
-               "<html>" +
-               "Task failed:<br/>"+
-               "<b>" +  job.getCurrentTask() + "</b><br/>",
-               "NUBS Launcher @ " + workspace.getRoot().getName(),
-               JOptionPane.YES_NO_OPTION,
-               JOptionPane.INFORMATION_MESSAGE,
-               new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
-               options,
-               options[0]);
-      if (n == 0) {
-         job.retry();
-      } else if (n == 1) {
-         job.ignore();
-      } else if (n == 2) {
-         job.fail();
-      }
-   }
-
    @Override
    public int getSize() {
       return rakeJobRepository.size();

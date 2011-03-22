@@ -11,16 +11,19 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.IRakeJob.State;
 import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 
@@ -56,10 +59,45 @@ public class JobPanel extends JPanel {
       });
       rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {       
          @Override
-         public void notifyEvent(IRakeJob source) {
-            jobsChanged();          
+         public void notifyEvent(final IRakeJob job) {
+
+            SwingUtilities.invokeLater(new Runnable() {               
+               @Override
+               public void run() {
+                  jobsChanged();  
+                  if (job.getState().equals(State.FAILED)) {
+                     showRetryGui(job);
+                  }
+                  /*
+                  if (job.getState().equals(State.FINISHED_FAILURE) || job.getState().equals(State.FINISHED_EXCEPTION)) {
+                     openLogfile(job);
+                  }
+                  */
+               }                  
+            });              
          }
       });
+   }
+   
+   private void showRetryGui(IRakeJob job) {
+      Object[] options = {"Retry","Ignore","Fail"};
+      int n = JOptionPane.showOptionDialog(null,
+               "<html>" +
+               "Task failed:<br/>"+
+               "<b>" +  job.getCurrentTask() + "</b><br/>",
+               "NUBS Launcher @ " + workspace.getRoot().getName(),
+               JOptionPane.YES_NO_OPTION,
+               JOptionPane.INFORMATION_MESSAGE,
+               new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
+               options,
+               options[0]);
+      if (n == 0) {
+         job.retry();
+      } else if (n == 1) {
+         job.ignore();
+      } else if (n == 2) {
+         job.fail();
+      }
    }
 
    private void jobsChanged() {
@@ -91,7 +129,7 @@ public class JobPanel extends JPanel {
    private void createUi() {
       setLayout(new BorderLayout());
       setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
-      jobs = new JList(new JobListModel(rakeJobRepository,workspace));
+      jobs = new JList(new JobListModel(rakeJobRepository));
       jobs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       jobs.setCellRenderer(new JobRenderer());
       
@@ -118,6 +156,17 @@ public class JobPanel extends JPanel {
    }
    
    
+   private void openLogfile(IRakeJob job) {
+      Desktop desktop = Desktop.getDesktop();
+      try {
+         desktop.open(job.getLogFile());
+      }
+      catch (Exception exception) {
+         LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
+      }
+   }
+
+
    private class OpenLogAction extends AbstractAction {
       private static final long serialVersionUID = 1L;
 
@@ -131,13 +180,7 @@ public class JobPanel extends JPanel {
          Object selectedValue = jobs.getSelectedValue();
          if (selectedValue instanceof IRakeJob) {
             IRakeJob job = (IRakeJob) selectedValue;
-            Desktop desktop = Desktop.getDesktop();
-            try {
-               desktop.open(job.getLogFile());
-            }
-            catch (Exception exception) {
-               LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
-            }           
+            openLogfile(job);           
          }
       }     
    }
