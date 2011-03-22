@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -50,12 +52,15 @@ public class JobPanel extends JPanel {
       add(scrollPane);
 
       toolBar = new JToolBar();
+      toolBar.setFloatable(false);
       add(toolBar,BorderLayout.SOUTH);
       
       openAction = new OpenLogAction();
       toolBar.add(openAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
+      
+      toolBar.add(Box.createHorizontalGlue());
       clearAction = new ClearAction();
       toolBar.add(clearAction);
       
@@ -67,7 +72,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public OpenLogAction() {
-         super("Open Log");
+         super("Open Log",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
          this.putValue(SHORT_DESCRIPTION, "Open Log");
       }
       
@@ -109,7 +114,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public ClearAction() {
-         super("Clear");
+         super("Clear Finished",new ImageIcon(NubsLauncherFrame.class.getResource("images/Clear.gif")));
          this.putValue(SHORT_DESCRIPTION, "Clear Finished");
       }
       
