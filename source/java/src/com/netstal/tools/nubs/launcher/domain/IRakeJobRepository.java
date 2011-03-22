@@ -7,6 +7,7 @@ public interface IRakeJobRepository extends IEventSource<IRakeJobRepository> {
    public void add(IRakeJob job);
    public void remove(IRakeJob job);
    public IEventSource<IRakeJob> getJobsEventSource();
+   public void clear(IRakeJob job);
    public void clearFinished();
 
 }     

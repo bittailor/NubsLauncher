@@ -48,7 +48,7 @@ public class JobRenderer extends JPanel implements ListCellRenderer {
       if (isSelected) {
          setBorder(BorderFactory.createLineBorder(list.getSelectionBackground()));
       } else {
-         setBorder(null);
+         setBorder(BorderFactory.createLineBorder(list.getBackground()));
       }
       
      

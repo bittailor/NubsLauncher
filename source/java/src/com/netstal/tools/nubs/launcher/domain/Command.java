@@ -6,7 +6,6 @@
 
 package com.netstal.tools.nubs.launcher.domain;
 
-import java.util.logging.*;
 
 public class Command {
     

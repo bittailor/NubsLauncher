@@ -15,9 +15,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.google.inject.Inject;
-import com.netstal.tools.nubs.launcher.domain.*;
+import com.netstal.tools.nubs.launcher.domain.IEventListener;
+import com.netstal.tools.nubs.launcher.domain.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
+import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 
 public class JobPanel extends JPanel {
 
@@ -29,16 +34,58 @@ public class JobPanel extends JPanel {
    private JList jobs;
 
    private OpenLogAction openAction;
-
    private RetryAction retryAction;
+   private RemoveAction removeAction;
 
-   private ClearAction clearAction;   
+   private RemoveAllFinishedAction removeAllFinishedAction;   
    
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
       createUi();
+      createActions();
+   }
+
+   private void createActions() {
+      jobs.addListSelectionListener(new ListSelectionListener() {        
+         @Override
+         public void valueChanged(ListSelectionEvent e) {
+            jobsChanged();
+         }
+      });
+      rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {       
+         @Override
+         public void notifyEvent(IRakeJob source) {
+            jobsChanged();          
+         }
+      });
+   }
+
+   private void jobsChanged() {
+      if (jobs.isSelectionEmpty()) {
+         disableAll();
+         return;
+      }
+      
+      Object selectedValue = jobs.getSelectedValue();
+      if (selectedValue instanceof IRakeJob) {
+         IRakeJob job = (IRakeJob) selectedValue;
+         openAction.setEnabled(true);
+         if (job.isFinished()) {
+            retryAction.setEnabled(false);
+            removeAction.setEnabled(true);
+         } else {
+            retryAction.setEnabled(true);
+            removeAction.setEnabled(false);
+         }
+      }      
+   }
+
+   private void disableAll() {
+      openAction.setEnabled(false);
+      retryAction.setEnabled(false);
+      removeAction.setEnabled(false);
    }
 
    private void createUi() {
@@ -59,11 +106,14 @@ public class JobPanel extends JPanel {
       toolBar.add(openAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
+      removeAction = new RemoveAction();
+      toolBar.add(removeAction);
       
       toolBar.add(Box.createHorizontalGlue());
-      clearAction = new ClearAction();
-      toolBar.add(clearAction);
+      removeAllFinishedAction = new RemoveAllFinishedAction();
+      toolBar.add(removeAllFinishedAction);
       
+      disableAll();
       
    }
    
@@ -96,7 +146,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public RetryAction() {
-         super("Retry");
+         super("Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/Retry.gif")));
          this.putValue(SHORT_DESCRIPTION, "Retry");
       }
       
@@ -110,12 +160,26 @@ public class JobPanel extends JPanel {
       }     
    }
    
-   private class ClearAction extends AbstractAction {
+   private class RemoveAction extends AbstractAction {
       private static final long serialVersionUID = 1L;
 
-      public ClearAction() {
-         super("Clear Finished",new ImageIcon(NubsLauncherFrame.class.getResource("images/Clear.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Clear Finished");
+      public RemoveAction() {
+         super("Remove",new ImageIcon(NubsLauncherFrame.class.getResource("images/Remove.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Remove");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         rakeJobRepository.clear((IRakeJob)jobs.getSelectedValue());
+      }     
+   }
+   
+   private class RemoveAllFinishedAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public RemoveAllFinishedAction() {
+         super("Remove All Finished Jobs",new ImageIcon(NubsLauncherFrame.class.getResource("images/RemoveAll.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Remove All Finished Jobs");
       }
       
       @Override

@@ -38,6 +38,12 @@ public class RakeJobRepository extends EventSource<IRakeJobRepository> implement
       }
       notifyEventListeners(this);
    }
+   
+   @Override
+   public void clear(IRakeJob job) {
+      remove(job);
+      job.dispose();
+   }
 
    @Override
    public IEventSource<IRakeJob> getJobsEventSource() {
