@@ -40,7 +40,8 @@ public class JobPanel extends JPanel {
    private RetryAction retryAction;
    private RemoveAction removeAction;
 
-   private RemoveAllFinishedAction removeAllFinishedAction;   
+   private RemoveAllFinishedAction removeAllFinishedAction;
+
    
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
@@ -68,11 +69,6 @@ public class JobPanel extends JPanel {
                   if (job.getState().equals(State.FAILED)) {
                      showRetryGui(job);
                   }
-                  /*
-                  if (job.getState().equals(State.FINISHED_FAILURE) || job.getState().equals(State.FINISHED_EXCEPTION)) {
-                     openLogfile(job);
-                  }
-                  */
                }                  
             });              
          }
