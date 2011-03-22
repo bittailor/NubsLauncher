@@ -1,0 +1,4 @@
+(in /Users/gekko/Documents/code/jNmGit/NubsLauncher/source/rake/src)
+** Invoke ShowVariableIgnore (first_time)
+** Execute ShowVariableIgnore
+true

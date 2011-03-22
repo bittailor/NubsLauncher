@@ -13,7 +13,10 @@ import javax.swing.ListCellRenderer;
 import com.netstal.tools.nubs.launcher.domain.IRakeJob;
  
 public class JobRenderer extends JPanel implements ListCellRenderer {
-
+   
+   private static final Color BUILDING_COLOR = new Color(34, 176, 34); 
+   
+   
    private JLabel command;
    private JLabel state;
    private JLabel currentTask;
@@ -36,14 +39,17 @@ public class JobRenderer extends JPanel implements ListCellRenderer {
    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
       
       IRakeJob job = (IRakeJob) value;
+      setBackground(job.getState().getColor());
+      /*
       switch (job.getState()) {
          case IDLE:                 setOpaque(false); setBackground(Color.LIGHT_GRAY);    break;
-         case BUILDING:             setOpaque(true);  setBackground(Color.GREEN);         break;
+         case BUILDING:             setOpaque(true);  setBackground(BUILDING_COLOR);      break;
          case FAILED:               setOpaque(true);  setBackground(Color.ORANGE);        break;
          case FINISHED_FAILURE:     setOpaque(true);  setBackground(Color.RED);           break;
          case FINISHED_EXCEPTION:   setOpaque(true);  setBackground(Color.RED);           break;
          case FINISHED_SUCESSFULLY: setOpaque(false); setBackground(Color.LIGHT_GRAY);    break;
       }
+      */
       
       if (isSelected) {
          setBorder(BorderFactory.createLineBorder(list.getSelectionBackground()));

@@ -6,6 +6,8 @@
 
 package com.netstal.tools.nubs.launcher.domain;
 
+import java.util.ArrayList;
+
 
 public class Command {
     
@@ -21,16 +23,55 @@ public class Command {
       this.command = command;
    }
 
-   public String[] command() {
-      String[] arguments = command.trim().split(" ");
-      String[] commandArray = new String[arguments.length+1];
-      commandArray[0] = RAKE;
-      for (int i = 0; i < arguments.length; i++) {
-         commandArray[i+1] = arguments[i];
-      }
-      return commandArray; 
+   public String[] command() {      
+      return createCommandArray();
    }
+
+   private String[] createCommandArray() {      
+      String[] fragments = command.trim().split(" ");
+
+      ArrayList<String> arguments = new ArrayList<String>(fragments.length);
+      arguments.add(RAKE);
+
+      StringBuilder buffer = new StringBuilder();
+      for (String fragment : fragments) {
+         if (buffer.length()==0) {
+            if (containsOpenQuote(fragment)) {
+               buffer.append(fragment);
+            } else {
+               insertArgument(arguments,fragment);
+            }
+         } else {
+            buffer.append(" ").append(fragment);
+            if (!containsOpenQuote(buffer.toString())) {
+               insertArgument(arguments,buffer.toString());
+               buffer = new StringBuilder();
+            }
+         }
+      }
+      String[] commandArray = arguments.toArray(new String[arguments.size()]);
+      return commandArray;
+   }
+
    
+   
+   private void insertArgument(ArrayList<String> arguments, String argument) {
+      String unquoted = unquote(argument);
+      if (!unquoted.isEmpty()) {
+         arguments.add(unquoted);
+      }     
+   }
+
+   private String unquote(String string) {
+      return string.replace("\"", "");
+   }
+
+   private boolean containsOpenQuote(String string) {
+      String quotes = string.replaceAll("[^\"]", "");
+      int numberOfQuotes = quotes.length();
+      return Math.abs(numberOfQuotes)%2==1;
+   }
+
    public String rakeCmdLine() {
       return RAKE + " " + command; 
    }

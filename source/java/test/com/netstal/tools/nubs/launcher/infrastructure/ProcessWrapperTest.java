@@ -124,7 +124,7 @@ public class ProcessWrapperTest {
       IProcess process = processBuilder.start();
       PrintStream out = new PrintStream(process.getOutputStream(),true);
       out.println("just a line"); 
-      Stream.close(out);
+      StreamUtility.close(out);
       process.waitFor();
       assertEquals(0,process.exitValue());
       

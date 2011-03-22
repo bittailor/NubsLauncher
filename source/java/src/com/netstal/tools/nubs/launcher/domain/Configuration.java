@@ -9,7 +9,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.netstal.tools.nubs.launcher.infrastructure.Stream;
+import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 
 public class Configuration implements IConfiguration {
 
@@ -64,7 +64,7 @@ public class Configuration implements IConfiguration {
          catch (IOException e) {
            LOG.log(Level.SEVERE, "Could not create configuration file ("+userPropertiesFile.getAbsolutePath()+")",e); 
          } finally {
-            Stream.close(outputStream);
+            StreamUtility.close(outputStream);
          }
       }
    }
@@ -94,7 +94,7 @@ public class Configuration implements IConfiguration {
          LOG.log(Level.WARNING,"Could not load user properties",e);
       }
       finally {
-         Stream.close(userInputStream);
+         StreamUtility.close(userInputStream);
       }
    }
 
@@ -110,7 +110,7 @@ public class Configuration implements IConfiguration {
          LOG.log(Level.WARNING,"Could not load default properties",e);
       }
       finally {
-         Stream.close(defaultInputStream);
+         StreamUtility.close(defaultInputStream);
       }
    }
    

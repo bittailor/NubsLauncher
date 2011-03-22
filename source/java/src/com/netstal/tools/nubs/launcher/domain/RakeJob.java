@@ -11,13 +11,13 @@ import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.infrastructure.ILineConsumer;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
-import com.netstal.tools.nubs.launcher.infrastructure.Stream;
+import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 
 public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputListener, IRakeJob, ILineConsumer {
 
    private static Logger LOG = Logger.getLogger(RakeJob.class.getName());
    
-   private State state;
+   private JobState state;
    private Provider<IProcessBuilder> processBuilderProvider;
    private IWorkspace workspace;
    private Command command;
@@ -34,7 +34,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
-      this.state = State.IDLE;
+      this.state = JobState.IDLE;
       this.currentTask = "-";
    }
 
@@ -56,15 +56,15 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
             .directory(workspace.getRoot())
             .outputConsumer(this)
             .start();
-         setState(State.BUILDING);
+         setState(JobState.BUILDING);
          int exitValue = process.waitFor();
          LOG.log(Level.INFO, "Job finished with " + exitValue);
          if (exitValue==0) {
-            setState(State.FINISHED_SUCESSFULLY);
+            setState(JobState.FINISHED_SUCESSFULLY);
          }
          else 
          {
-            setState(State.FINISHED_FAILURE);
+            setState(JobState.FINISHED_FAILURE);
          }
          return exitValue;
       }
@@ -74,16 +74,16 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       catch (InterruptedException e) {
          LOG.log(Level.SEVERE, "Probelm waiting for rake to finish", e);
       } finally {
-         Stream.close(log);
+         StreamUtility.close(log);
          log = null;
       }
       outputParser.removeListener(this);
-      setState(State.FINISHED_EXCEPTION);
+      setState(JobState.FINISHED_EXCEPTION);
       return 1;
    }
    
    @Override
-   public State getState() {
+   public JobState getState() {
       return state;
    }
    
@@ -104,7 +104,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       return logFile;
    }
 
-   private void setState(State newState) {
+   private void setState(JobState newState) {
       state = newState; 
       notifyEventListeners(this);
    }
@@ -114,7 +114,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(State.BUILDING);
+      setState(JobState.BUILDING);
       process.out().println("y");
       process.out().flush();   
    }
@@ -126,7 +126,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(State.BUILDING);
+      setState(JobState.BUILDING);
       process.out().println("i");
       process.out().flush();
    }
@@ -136,7 +136,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(State.BUILDING);
+      setState(JobState.BUILDING);
       process.out().println("n");
       process.out().flush();
    }
@@ -146,7 +146,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(retry) {
          retry();
       } else {
-         setState(State.FAILED);   
+         setState(JobState.FAILED);   
       }
    }
    
@@ -172,14 +172,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    
    @Override
    public boolean isFinished() {
-      switch (state) {
-         case FINISHED_EXCEPTION:
-         case FINISHED_FAILURE:
-         case FINISHED_SUCESSFULLY:
-            return true; 
-         
-      }
-      return false;
+      return state.isFinished();
    }
 
    @Override

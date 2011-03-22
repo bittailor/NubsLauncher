@@ -32,7 +32,7 @@ public class StreamPumper implements Runnable {
       } catch (IOException e) {
          // do nothing
       } finally {
-         Stream.close(in);
+         StreamUtility.close(in);
       }
    }
 

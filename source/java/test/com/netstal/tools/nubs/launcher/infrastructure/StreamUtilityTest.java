@@ -10,7 +10,7 @@ import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Test;
 
-public class StreamTest {
+public class StreamUtilityTest {
 
    private IMocksControl control;
    private Closeable closeable;
@@ -27,7 +27,7 @@ public class StreamTest {
    public void testClose() throws IOException {
       closeable.close();
       control.replay();
-      Stream.close(closeable);
+      StreamUtility.close(closeable);
       control.verify();
    }
    
@@ -36,7 +36,7 @@ public class StreamTest {
       closeable.close();
       expectLastCall().andThrow(new IOException());
       control.replay();
-      Stream.close(closeable);
+      StreamUtility.close(closeable);
       control.verify();
    }
 

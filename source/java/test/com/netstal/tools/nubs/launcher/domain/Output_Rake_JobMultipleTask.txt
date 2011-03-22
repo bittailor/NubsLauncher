@@ -1,0 +1,10 @@
+(in /Users/gekko/Documents/code/jNmGit/NubsLauncher/source/rake/src)
+** Invoke ProjectOne_build_ipc_only (first_time)
+** Execute ProjectOne_build_ipc_only
+Doing the work of ProjectOne_build_ipc_only
+** Invoke ProjectTwo_build_dpu_only (first_time)
+** Execute ProjectTwo_build_dpu_only
+Doing the work of ProjectTwo_build_dpu_only
+** Invoke ProjectTwo_build_ipc_only (first_time)
+** Execute ProjectTwo_build_ipc_only
+Doing the work of ProjectTwo_build_ipc_only

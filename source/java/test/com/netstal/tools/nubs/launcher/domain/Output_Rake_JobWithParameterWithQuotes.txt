@@ -1,0 +1,4 @@
+(in /Users/gekko/Documents/code/jNmGit/NubsLauncher/source/rake/src)
+** Invoke ShowVariableBjam (first_time)
+** Execute ShowVariableBjam
+-j2 mingw

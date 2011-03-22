@@ -46,6 +46,14 @@ end
 
 # -----------------------------------------------------------------------
 
+task :FailFast do
+	puts "Just FailFast ==> Problem xyz"
+    $stdout.flush
+	fail("Just Fail FailFast")
+end
+
+# -----------------------------------------------------------------------
+
 task :TimeOne do
 	useTime()	
 end
@@ -71,6 +79,10 @@ end
 task :FailOnce => [:FailOnce_A] 
 
 
-task :ShowVariable do 
+task :ShowVariableBjam do 
   puts ENV["bjam_targets"]
+end
+
+task :ShowVariableIgnore do
+  puts ENV["ignore_deps"]
 end

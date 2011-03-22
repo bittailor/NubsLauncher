@@ -1,5 +1,6 @@
 package com.netstal.tools.nubs.launcher.application;
 
+import java.awt.SystemTray;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,11 +41,13 @@ import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessBuilderWrapper;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessOutputCapture;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
+import com.netstal.tools.nubs.launcher.ui.INotification;
 import com.netstal.tools.nubs.launcher.ui.JobPanel;
 import com.netstal.tools.nubs.launcher.ui.LauncherPanel;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 import com.netstal.tools.nubs.launcher.ui.RakeTasksField;
+import com.netstal.tools.nubs.launcher.ui.TrayNotification;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.CommandHistoryTool;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.IToolsFactory;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.LaunchRakeTool;
@@ -65,6 +68,7 @@ public class NubsLauncher {
       
       String userDirectory = System.getProperty("user.dir");
       NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);      
+      INotification notification = injector.getInstance(INotification.class);      
       mainFrame.setVisible(true);
       if(new File(userDirectory,"rakefile").exists()) {
          mainFrame.changeWorkspace(new File(userDirectory));
@@ -92,7 +96,7 @@ public class NubsLauncher {
                bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);       
                bind(JComponent.class).annotatedWith(LauncherPanel.class).to(JPanel.class);
             }
-         
+            
             
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
@@ -108,7 +112,14 @@ public class NubsLauncher {
             bind(IToolsFactory.class).to(ToolsFactory.class).in(Singleton.class);
             bind(IConfiguration.class).toInstance(configuration);
             bind(RakeTasksField.class).in(Singleton.class); 
-            bind(NubsLauncherFrame.class).in(Singleton.class);  
+            bind(NubsLauncherFrame.class).in(Singleton.class); 
+            
+            if (SystemTray.isSupported()) {
+               bind(INotification.class).to(TrayNotification.class).in(Singleton.class);               
+            } else {
+               // TODO
+            }
+            
             
             bind(LoadTasksPanel.class); 
             bind(SuggestTaskTool.class);

@@ -3,6 +3,9 @@ package com.netstal.tools.nubs.launcher.ui;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,9 +26,9 @@ import javax.swing.event.ListSelectionListener;
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeJob;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob.State;
 import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
+import com.netstal.tools.nubs.launcher.domain.JobState;
 
 public class JobPanel extends JPanel {
 
@@ -58,6 +61,18 @@ public class JobPanel extends JPanel {
             jobsChanged();
          }
       });
+      
+      jobs.addMouseListener(new MouseAdapter() {
+         
+             @Override
+         public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount()>1) {
+               openLogfile((IRakeJob)jobs.getSelectedValue());
+            }
+            
+         }
+      });
+      
       rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {       
          @Override
          public void notifyEvent(final IRakeJob job) {
@@ -66,7 +81,7 @@ public class JobPanel extends JPanel {
                @Override
                public void run() {
                   jobsChanged();  
-                  if (job.getState().equals(State.FAILED)) {
+                  if (job.getState().equals(JobState.FAILED)) {
                      showRetryGui(job);
                   }
                }                  
