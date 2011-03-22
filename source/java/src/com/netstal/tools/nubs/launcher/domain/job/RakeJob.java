@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.domain;
+   package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,18 @@ import java.util.logging.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.EventSource;
+import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
+import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
+import com.netstal.tools.nubs.launcher.domain.IWorkspace;
+import com.netstal.tools.nubs.launcher.domain.job.state.Building;
+import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedExceptionally;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
+import com.netstal.tools.nubs.launcher.domain.job.state.IJobState;
+import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
 import com.netstal.tools.nubs.launcher.infrastructure.ILineConsumer;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
@@ -17,7 +29,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
 
    private static Logger LOG = Logger.getLogger(RakeJob.class.getName());
    
-   private JobState state;
+   private IJobState state;
    private Provider<IProcessBuilder> processBuilderProvider;
    private IWorkspace workspace;
    private Command command;
@@ -34,7 +46,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
-      this.state = JobState.IDLE;
+      this.state = Idle.INSTANCE;
       this.currentTask = "-";
    }
 
@@ -56,15 +68,15 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
             .directory(workspace.getRoot())
             .outputConsumer(this)
             .start();
-         setState(JobState.BUILDING);
+         setState(Building.INSTANCE);
          int exitValue = process.waitFor();
          LOG.log(Level.INFO, "Job finished with " + exitValue);
          if (exitValue==0) {
-            setState(JobState.FINISHED_SUCESSFULLY);
+            setState(FinishedSucessfully.INSTANCE);
          }
          else 
          {
-            setState(JobState.FINISHED_FAILURE);
+            setState(FinishedFaultily.INSTANCE);
          }
          return exitValue;
       }
@@ -78,12 +90,12 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
          log = null;
       }
       outputParser.removeListener(this);
-      setState(JobState.FINISHED_EXCEPTION);
+      setState(FinishedExceptionally.INSTANCE);
       return 1;
    }
    
    @Override
-   public JobState getState() {
+   public IJobState getState() {
       return state;
    }
    
@@ -97,14 +109,12 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       return command;
    }
    
-   
-
    @Override
    public File getLogFile() {
       return logFile;
    }
 
-   private void setState(JobState newState) {
+   private void setState(IJobState newState) {
       state = newState; 
       notifyEventListeners(this);
    }
@@ -114,7 +124,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(JobState.BUILDING);
+      setState(Building.INSTANCE);
       process.out().println("y");
       process.out().flush();   
    }
@@ -126,7 +136,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(JobState.BUILDING);
+      setState(Building.INSTANCE);
       process.out().println("i");
       process.out().flush();
    }
@@ -136,7 +146,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(isFinished()) {
          return;
       }
-      setState(JobState.BUILDING);
+      setState(Building.INSTANCE);
       process.out().println("n");
       process.out().flush();
    }
@@ -146,7 +156,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       if(retry) {
          retry();
       } else {
-         setState(JobState.FAILED);   
+         setState(Failed.INSTANCE);   
       }
    }
    

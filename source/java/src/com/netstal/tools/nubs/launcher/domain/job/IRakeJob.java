@@ -1,7 +1,11 @@
 
-package com.netstal.tools.nubs.launcher.domain;
+package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.io.File;
+
+import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.IEventSource;
+import com.netstal.tools.nubs.launcher.domain.job.state.IJobState;
 
 
 public interface IRakeJob extends IEventSource<IRakeJob> {
@@ -11,7 +15,7 @@ public interface IRakeJob extends IEventSource<IRakeJob> {
    public int launch();
    public void dispose();
    
-   public JobState getState();
+   public IJobState getState();
    public String getCurrentTask();
    public Command getCommand();
    public File getLogFile();

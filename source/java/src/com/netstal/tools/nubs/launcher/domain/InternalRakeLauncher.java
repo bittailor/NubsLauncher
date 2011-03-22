@@ -4,6 +4,8 @@ import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 
 public class InternalRakeLauncher implements IRakeLauncher {
 

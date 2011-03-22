@@ -120,8 +120,11 @@ public class NubsLauncherFrame extends JFrame {
       JPanel rootPanel = new JPanel(new BorderLayout());
       layersPanel.add(rootPanel,MAIN_LAYER);
       
+      JPanel topPanel = new JPanel(new BorderLayout());
+      rootPanel.add(topPanel,BorderLayout.NORTH);
+      
       toolBar = new JToolBar();
-      rootPanel.add(toolBar,BorderLayout.NORTH);
+      topPanel.add(toolBar,BorderLayout.NORTH);
       toolBar.setFloatable(false);
       runRakeAction = new RunRakeAction();
       toolBar.add(runRakeAction);
@@ -135,9 +138,9 @@ public class NubsLauncherFrame extends JFrame {
       workspaceLabel = new JLabel("-");
       toolBar.add(workspaceLabel);
      
-      rootPanel.add(suggestField);
+      topPanel.add(suggestField,BorderLayout.SOUTH);
       
-      rootPanel.add(launcherPanel,BorderLayout.SOUTH);
+      rootPanel.add(launcherPanel);
       
       LoadTasksPanel loadTasksScreen = new LoadTasksPanel();
       layersPanel.add(loadTasksScreen,LOAD_LAYER);  

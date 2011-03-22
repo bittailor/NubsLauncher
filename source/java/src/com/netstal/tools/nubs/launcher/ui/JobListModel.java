@@ -4,8 +4,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.SwingUtilities;
 
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob;
-import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 
 public class JobListModel extends AbstractListModel {
   

@@ -1,8 +1,12 @@
-package com.netstal.tools.nubs.launcher.domain;
+package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.netstal.tools.nubs.launcher.domain.EventSource;
+import com.netstal.tools.nubs.launcher.domain.IEventListener;
+import com.netstal.tools.nubs.launcher.domain.IEventSource;
 
 public class RakeJobRepository extends EventSource<IRakeJobRepository> implements IRakeJobRepository, IEventListener<IRakeJob> {
 

@@ -5,7 +5,6 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,11 +23,18 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.google.inject.Inject;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob;
-import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
-import com.netstal.tools.nubs.launcher.domain.JobState;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
+import com.netstal.tools.nubs.launcher.domain.job.state.Building;
+import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedExceptionally;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
+import com.netstal.tools.nubs.launcher.domain.job.state.IJobStateVisitor;
+import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
 
 public class JobPanel extends JPanel {
 
@@ -36,20 +42,26 @@ public class JobPanel extends JPanel {
    
    private IRakeJobRepository rakeJobRepository;
    private IWorkspace workspace;
+   private IConfiguration configuration;
    private JToolBar toolBar;
    private JList jobs;
 
    private OpenLogAction openAction;
    private RetryAction retryAction;
+   private IgonreAction igonreAction;
+   private FailAction failAction;
    private RemoveAction removeAction;
 
    private RemoveAllFinishedAction removeAllFinishedAction;
 
+
+
    
    @Inject
-   public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace) {
+   public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace, IConfiguration configuration) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
+      this.configuration = configuration;
       createUi();
       createActions();
    }
@@ -81,7 +93,8 @@ public class JobPanel extends JPanel {
                @Override
                public void run() {
                   jobsChanged();  
-                  if (job.getState().equals(JobState.FAILED)) {
+                  
+                  if (job.getState().equals(Failed.INSTANCE)) {
                      showRetryGui(job);
                   }
                }                  
@@ -91,23 +104,25 @@ public class JobPanel extends JPanel {
    }
    
    private void showRetryGui(IRakeJob job) {
-      Object[] options = {"Retry","Ignore","Fail"};
-      int n = JOptionPane.showOptionDialog(null,
-               "<html>" +
-               "Task failed:<br/>"+
-               "<b>" +  job.getCurrentTask() + "</b><br/>",
-               "NUBS Launcher @ " + workspace.getRoot().getName(),
-               JOptionPane.YES_NO_OPTION,
-               JOptionPane.INFORMATION_MESSAGE,
-               new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
-               options,
-               options[0]);
-      if (n == 0) {
-         job.retry();
-      } else if (n == 1) {
-         job.ignore();
-      } else if (n == 2) {
-         job.fail();
+      if (configuration.getFlag("notification.ShowRetryDialog")){
+         Object[] options = {"Retry","Ignore","Fail"};
+         int n = JOptionPane.showOptionDialog(null,
+                  "<html>" +
+                  "Task failed:<br/>"+
+                  "<b>" +  job.getCurrentTask() + "</b><br/>",
+                  "NUBS Launcher @ " + workspace.getRoot().getName(),
+                  JOptionPane.YES_NO_OPTION,
+                  JOptionPane.INFORMATION_MESSAGE,
+                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
+                  options,
+                  options[0]);
+         if (n == 0) {
+            job.retry();
+         } else if (n == 1) {
+            job.ignore();
+         } else if (n == 2) {
+            job.fail();
+         }
       }
    }
 
@@ -121,19 +136,67 @@ public class JobPanel extends JPanel {
       if (selectedValue instanceof IRakeJob) {
          IRakeJob job = (IRakeJob) selectedValue;
          openAction.setEnabled(true);
-         if (job.isFinished()) {
-            retryAction.setEnabled(false);
-            removeAction.setEnabled(true);
-         } else {
-            retryAction.setEnabled(true);
-            removeAction.setEnabled(false);
-         }
-      }      
+         
+         job.getState().accept(new IJobStateVisitor() {
+            
+            private void finished() {
+               retryAction.setEnabled(false);
+               igonreAction.setEnabled(false);
+               failAction.setEnabled(false);
+               removeAction.setEnabled(true);              
+            }
+            
+            
+            @Override
+            public void visit(FinishedExceptionally state) {
+               finished();
+            }
+            
+           
+
+            @Override
+            public void visit(FinishedFaultily state) {
+               finished();
+            }
+            
+            @Override
+            public void visit(FinishedSucessfully state) {
+               finished();
+            }
+            
+            @Override
+            public void visit(Failed state) {
+               retryAction.setEnabled(true);
+               igonreAction.setEnabled(true);
+               failAction.setEnabled(true); 
+               removeAction.setEnabled(false);
+            }
+            
+            @Override
+            public void visit(Building state) {
+               retryAction.setEnabled(false);
+               igonreAction.setEnabled(false);
+               failAction.setEnabled(false); 
+               removeAction.setEnabled(false);
+               
+            }
+            
+            @Override
+            public void visit(Idle state) {
+               retryAction.setEnabled(false);
+               igonreAction.setEnabled(false);
+               failAction.setEnabled(false); 
+               removeAction.setEnabled(false);        
+            }
+         });
+      } 
    }
 
    private void disableAll() {
       openAction.setEnabled(false);
       retryAction.setEnabled(false);
+      igonreAction.setEnabled(false);
+      failAction.setEnabled(false);
       removeAction.setEnabled(false);
    }
 
@@ -155,6 +218,10 @@ public class JobPanel extends JPanel {
       toolBar.add(openAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
+      igonreAction = new IgonreAction();
+      toolBar.add(igonreAction);
+      failAction = new FailAction();
+      toolBar.add(failAction);
       removeAction = new RemoveAction();
       toolBar.add(removeAction);
       
@@ -183,7 +250,7 @@ public class JobPanel extends JPanel {
 
       public OpenLogAction() {
          super("Open Log",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Open Log");
+         this.putValue(SHORT_DESCRIPTION, "Open The Log File");
       }
       
       @Override
@@ -201,7 +268,7 @@ public class JobPanel extends JPanel {
 
       public RetryAction() {
          super("Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/Retry.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Retry");
+         this.putValue(SHORT_DESCRIPTION, "Retry The Failed Task");
       }
       
       @Override
@@ -214,12 +281,48 @@ public class JobPanel extends JPanel {
       }     
    }
    
+   private class IgonreAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public IgonreAction() {
+         super("Ignore",new ImageIcon(NubsLauncherFrame.class.getResource("images/Ignore.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Ignore The Failed Task");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Object selectedValue = jobs.getSelectedValue();
+         if (selectedValue instanceof IRakeJob) {
+            IRakeJob job = (IRakeJob) selectedValue;
+            job.ignore();          
+         }
+      }     
+   }
+   
+   private class FailAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public FailAction() {
+         super("Fail",new ImageIcon(NubsLauncherFrame.class.getResource("images/Fail.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Fail The Failed Task");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Object selectedValue = jobs.getSelectedValue();
+         if (selectedValue instanceof IRakeJob) {
+            IRakeJob job = (IRakeJob) selectedValue;
+            job.fail();          
+         }
+      }     
+   }
+   
    private class RemoveAction extends AbstractAction {
       private static final long serialVersionUID = 1L;
 
       public RemoveAction() {
          super("Remove",new ImageIcon(NubsLauncherFrame.class.getResource("images/Remove.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Remove");
+         this.putValue(SHORT_DESCRIPTION, "Remove This Job");
       }
       
       @Override

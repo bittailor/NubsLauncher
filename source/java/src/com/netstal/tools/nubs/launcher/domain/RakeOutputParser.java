@@ -62,7 +62,6 @@ public class RakeOutputParser implements IRakeBuildOutputParser {
       for (IRakeBuildOutputListener listener : listeners) {
          listener.notifyTaskFailed(taskName);
       }
-      System.out.println("retryDetected : "+ taskName);
    }
 
 }

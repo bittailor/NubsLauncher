@@ -16,6 +16,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.domain.job.RakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
+import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessBuilderWrapper;
 import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
@@ -100,7 +103,7 @@ public class RakeJobIntegrationTest {
          .command(command)
          .launch();
 
-      assertEquals(JobState.FINISHED_FAILURE, rakeJob.getState());
+      assertEquals(FinishedFaultily.INSTANCE, rakeJob.getState());
       
       control.verify();      
    }
@@ -113,7 +116,7 @@ public class RakeJobIntegrationTest {
          .command(command)
          .launch();
       
-      assertEquals(JobState.FINISHED_SUCESSFULLY, rakeJob.getState());
+      assertEquals(FinishedSucessfully.INSTANCE, rakeJob.getState());
       assertRakeLog(expectFileName, rakeJob.getLogFile());
       
       control.verify();

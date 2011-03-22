@@ -22,19 +22,19 @@ import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
-import com.netstal.tools.nubs.launcher.domain.IRakeJob;
-import com.netstal.tools.nubs.launcher.domain.IRakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.IRakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.InternalRakeLauncher;
-import com.netstal.tools.nubs.launcher.domain.RakeJob;
-import com.netstal.tools.nubs.launcher.domain.RakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.RakeOutputParser;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskImporter;
 import com.netstal.tools.nubs.launcher.domain.RakeTaskParser;
 import com.netstal.tools.nubs.launcher.domain.Workspace;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
+import com.netstal.tools.nubs.launcher.domain.job.RakeJob;
+import com.netstal.tools.nubs.launcher.domain.job.RakeJobRepository;
 import com.netstal.tools.nubs.launcher.infrastructure.ConsoleLauncher;
 import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
@@ -68,7 +68,7 @@ public class NubsLauncher {
       
       String userDirectory = System.getProperty("user.dir");
       NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);      
-      INotification notification = injector.getInstance(INotification.class);      
+      injector.getInstance(INotification.class);      
       mainFrame.setVisible(true);
       if(new File(userDirectory,"rakefile").exists()) {
          mainFrame.changeWorkspace(new File(userDirectory));

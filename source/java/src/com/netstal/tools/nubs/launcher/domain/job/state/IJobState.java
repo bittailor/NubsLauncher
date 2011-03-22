@@ -1,7 +1,12 @@
-package com.netstal.tools.nubs.launcher.domain;
+package com.netstal.tools.nubs.launcher.domain.job.state;
 
-import java.awt.Color;
 
+public interface IJobState {
+   public <V extends IJobStateVisitor> V accept(V visitor);
+   public boolean isFinished();  
+}
+
+/*
 public enum JobState {
    IDLE                 (false,  new Color(  0,   0,   0,   0)),
    BUILDING             (false,  new Color(  8, 159,   8, 255)),
@@ -28,3 +33,5 @@ public enum JobState {
    
    
 }
+
+*/

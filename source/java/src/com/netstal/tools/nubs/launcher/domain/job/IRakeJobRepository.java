@@ -1,4 +1,6 @@
-package com.netstal.tools.nubs.launcher.domain;
+package com.netstal.tools.nubs.launcher.domain.job;
+
+import com.netstal.tools.nubs.launcher.domain.IEventSource;
 
 public interface IRakeJobRepository extends IEventSource<IRakeJobRepository> {
 
