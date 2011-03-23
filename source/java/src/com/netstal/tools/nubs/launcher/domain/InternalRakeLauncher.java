@@ -10,11 +10,13 @@ import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 public class InternalRakeLauncher implements IRakeLauncher {
 
    private Provider<IRakeJob> rakeJobProvider;
+   private ICommandHistory commandHistory;
    private IRakeJobRepository repository;
    
    @Inject
-   public InternalRakeLauncher(Provider<IRakeJob> rakeJobProvider, IRakeJobRepository repository) {
+   public InternalRakeLauncher(Provider<IRakeJob> rakeJobProvider, ICommandHistory commandHistory, IRakeJobRepository repository) {
       this.rakeJobProvider = rakeJobProvider;
+      this.commandHistory = commandHistory;
       this.repository = repository;
    }
 
@@ -22,8 +24,7 @@ public class InternalRakeLauncher implements IRakeLauncher {
 
    @Override
    public void launch(final Command command) {
-      // TODO fsc dont use swingworker here !
-      
+      commandHistory.push(command);
       SwingWorker<Void,Void> worker = new SwingWorker<Void, Void>() {
 
          @Override
@@ -38,11 +39,6 @@ public class InternalRakeLauncher implements IRakeLauncher {
       };
       worker.execute();
       
-      
-      
-         
-      
-
    }
 
 }
