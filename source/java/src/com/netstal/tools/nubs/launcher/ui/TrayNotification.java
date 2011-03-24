@@ -7,7 +7,7 @@ import java.awt.TrayIcon;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
@@ -50,37 +50,42 @@ public class TrayNotification implements INotification, IEventListener<IRakeJob>
 
    @Override
    public void notifyEvent(final IRakeJob job) {
-      job.getState().accept(new IJobStateVisitor() {
-         
+      SwingUtilities.invokeLater(new Runnable(){
+
          @Override
-         public void visit(FinishedExceptionally state) {
-            trayIcon.displayMessage("NUBS", "Build finished with a exeption", TrayIcon.MessageType.WARNING);        
+         public void run() {
+            job.getState().accept(new IJobStateVisitor() {
+
+               @Override
+               public void visit(FinishedExceptionally state) {
+                  trayIcon.displayMessage("NUBS", "Build finished with a exeption", TrayIcon.MessageType.WARNING);        
+               }
+
+               @Override
+               public void visit(FinishedFaultily state) {
+                  trayIcon.displayMessage("NUBS", "Build finished with a failure", TrayIcon.MessageType.WARNING);       
+               }
+
+               @Override
+               public void visit(FinishedSucessfully state) {
+                  trayIcon.displayMessage("NUBS", "Build finished sucessfully", TrayIcon.MessageType.INFO);         
+               }
+
+               @Override
+               public void visit(Failed state) {
+                  trayIcon.displayMessage("NUBS", "Build failed at task " + job.getCurrentTask(), TrayIcon.MessageType.ERROR);
+               }
+
+               @Override
+               public void visit(Building state) {
+               }
+
+               @Override
+               public void visit(Idle state) {
+               }
+
+            });
          }
-         
-         @Override
-         public void visit(FinishedFaultily state) {
-            trayIcon.displayMessage("NUBS", "Build finished with a failure", TrayIcon.MessageType.WARNING);       
-         }
-         
-         @Override
-         public void visit(FinishedSucessfully state) {
-            trayIcon.displayMessage("NUBS", "Build finished sucessfully", TrayIcon.MessageType.INFO);         
-         }
-         
-         @Override
-         public void visit(Failed state) {
-            trayIcon.displayMessage("NUBS", "Build failed at task " + job.getCurrentTask(), TrayIcon.MessageType.ERROR);
-         }
-         
-         @Override
-         public void visit(Building state) {
-         }
-         
-         @Override
-         public void visit(Idle state) {
-         }
-         
       });
-   }
-  
+   }  
 }
