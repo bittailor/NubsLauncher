@@ -5,6 +5,7 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,14 +52,18 @@ public class JobPanel extends JPanel {
    private IgonreAction igonreAction;
    private FailAction failAction;
    private RemoveAction removeAction;
+   private RelaunchAction relaunchAction;
 
    private RemoveAllFinishedAction removeAllFinishedAction;
 
 
 
+
    
    @Inject
-   public JobPanel(IRakeJobRepository rakeJobRepository, IWorkspace workspace, IConfiguration configuration) {
+   public JobPanel(IRakeJobRepository rakeJobRepository, 
+                   IWorkspace workspace, 
+                   IConfiguration configuration) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
       this.configuration = configuration;
@@ -143,6 +148,7 @@ public class JobPanel extends JPanel {
                retryAction.setEnabled(false);
                igonreAction.setEnabled(false);
                failAction.setEnabled(false);
+               relaunchAction.setEnabled(true);
                removeAction.setEnabled(true);              
             }
             
@@ -169,6 +175,7 @@ public class JobPanel extends JPanel {
                retryAction.setEnabled(true);
                igonreAction.setEnabled(true);
                failAction.setEnabled(true); 
+               relaunchAction.setEnabled(false);
                removeAction.setEnabled(false);
             }
             
@@ -177,6 +184,7 @@ public class JobPanel extends JPanel {
                retryAction.setEnabled(false);
                igonreAction.setEnabled(false);
                failAction.setEnabled(false); 
+               relaunchAction.setEnabled(false);
                removeAction.setEnabled(false);
                
             }
@@ -186,6 +194,7 @@ public class JobPanel extends JPanel {
                retryAction.setEnabled(false);
                igonreAction.setEnabled(false);
                failAction.setEnabled(false); 
+               relaunchAction.setEnabled(false);
                removeAction.setEnabled(false);        
             }
          });
@@ -197,6 +206,7 @@ public class JobPanel extends JPanel {
       retryAction.setEnabled(false);
       igonreAction.setEnabled(false);
       failAction.setEnabled(false);
+      relaunchAction.setEnabled(false);
       removeAction.setEnabled(false);
    }
 
@@ -222,6 +232,8 @@ public class JobPanel extends JPanel {
       toolBar.add(igonreAction);
       failAction = new FailAction();
       toolBar.add(failAction);
+      relaunchAction = new RelaunchAction();
+      toolBar.add(relaunchAction);
       removeAction = new RemoveAction();
       toolBar.add(removeAction);
       
@@ -331,6 +343,29 @@ public class JobPanel extends JPanel {
       }     
    }
    
+   private class RelaunchAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public RelaunchAction() {
+         super("Launch This Job Again",new ImageIcon(NubsLauncherFrame.class.getResource("images/Launch.png")));
+         this.putValue(SHORT_DESCRIPTION, "Launch This Job Again");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Object selectedValue = jobs.getSelectedValue();
+         if (selectedValue instanceof IRakeJob) {
+            IRakeJob job = (IRakeJob) selectedValue;
+            try {
+               job.relaunch();
+            }
+            catch (IOException exception) {
+               LOG.log(Level.SEVERE, "Problem Relaunching Job", exception);
+            }          
+         }
+      }     
+   }
+   
    private class RemoveAllFinishedAction extends AbstractAction {
       private static final long serialVersionUID = 1L;
 
@@ -344,5 +379,7 @@ public class JobPanel extends JPanel {
          rakeJobRepository.clearFinished();
       }     
    }
+   
+  
    
 }

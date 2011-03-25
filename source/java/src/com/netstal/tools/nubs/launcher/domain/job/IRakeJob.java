@@ -2,6 +2,7 @@
 package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.IEventSource;
@@ -24,6 +25,8 @@ public interface IRakeJob extends IEventSource<IRakeJob> {
    public void retry();
    public void ignore();
    public void fail();
+
+   public void relaunch() throws IOException;
    
 
 }

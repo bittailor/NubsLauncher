@@ -12,6 +12,7 @@ import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.EventSource;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
+import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.job.state.Building;
 import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
@@ -35,17 +36,24 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    private Command command;
    private IProcess process;
    private IRakeBuildOutputParser outputParser;
+   private IRakeLauncher launcher;
    private boolean retry;
    private String currentTask;
    private File logFile;
    private PrintWriter log;
+
    
    
    @Inject
-   public RakeJob(Provider<IProcessBuilder> processBuilderProvider, IRakeBuildOutputParser outputParser, IWorkspace workspace) {
+   public RakeJob(
+            Provider<IProcessBuilder> processBuilderProvider, 
+            IRakeBuildOutputParser outputParser, 
+            IWorkspace workspace , 
+            IRakeLauncher launcher) {
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
+      this.launcher = launcher;
       this.state = Idle.INSTANCE;
       this.currentTask = "-";
    }
@@ -192,6 +200,11 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
             LOG.log(Level.WARNING, "Could not delete log file of rake job on dispose");
          }
       }
+   }
+
+   @Override
+   public void relaunch() throws IOException {
+      launcher.launch(command);
    }
    
    

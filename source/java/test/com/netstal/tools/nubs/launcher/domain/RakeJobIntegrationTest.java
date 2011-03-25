@@ -32,6 +32,7 @@ public class RakeJobIntegrationTest {
    private IRakeBuildOutputParser outputParser;
    private Provider<IProcessBuilder> processBuilderProvider;
    private RakeJob rakeJob;
+   private IRakeLauncher launcher;
 
    @SuppressWarnings("unchecked")
    @Before
@@ -55,8 +56,9 @@ public class RakeJobIntegrationTest {
          .anyTimes();
       
       outputParser = new RakeOutputParser();
+      launcher = control.createMock("launcher", IRakeLauncher.class);
       
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher);
       
    }
 
