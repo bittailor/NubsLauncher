@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.infrastructure;
+package com.netstal.tools.nubs.launcher.infrastructure.notification;
 
 import static org.easymock.EasyMock.createControl;
 import static org.easymock.EasyMock.expectLastCall;
@@ -10,25 +10,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.netstal.tools.nubs.launcher.infrastructure.notification.IListener;
+import com.netstal.tools.nubs.launcher.infrastructure.notification.NotificationService;
+
 public class NotificationServiceTest {
 
    private IMocksControl control;
-   private Emmiter emitterOne;
-   private Emmiter emitterTwo;
-   private IEmmiterListener listenerOne;
-   private IEmmiterListener listenerTwo;
-   private IEmmiterListener listenerThree;
+   private TestEmitter emitterOne;
+   private TestEmitter emitterTwo;
+   private ITestEmitterListener listenerOne;
+   private ITestEmitterListener listenerTwo;
+   private ITestEmitterListener listenerThree;
 
    @Before
    public void setUp() throws Exception {
       control = createControl();
       
-      emitterOne = new Emmiter(); 
-      emitterTwo = new Emmiter(); 
+      emitterOne = new TestEmitter(); 
+      emitterTwo = new TestEmitter(); 
       
-      listenerOne = control.createMock("listenerOne", IEmmiterListener.class);
-      listenerTwo = control.createMock("listenerTwo", IEmmiterListener.class);
-      listenerThree = control.createMock("listenerThree", IEmmiterListener.class);
+      listenerOne = control.createMock("listenerOne", ITestEmitterListener.class);
+      listenerTwo = control.createMock("listenerTwo", ITestEmitterListener.class);
+      listenerThree = control.createMock("listenerThree", ITestEmitterListener.class);
    }
 
    @After
@@ -44,10 +47,10 @@ public class NotificationServiceTest {
       control.replay();
       
       NotificationService notificationBus = new NotificationService();
-      IEmmiterListener notificationDispatcher = notificationBus.getNotificationDispatcher(IEmmiterListener.class, emitterOne);
+      ITestEmitterListener notificationDispatcher = notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterOne);
       
-      notificationBus.addListener(IEmmiterListener.class, listenerOne, emitterOne);
-      notificationBus.addListener(IEmmiterListener.class, listenerTwo, emitterOne);
+      notificationBus.addListener(ITestEmitterListener.class, listenerOne, emitterOne);
+      notificationBus.addListener(ITestEmitterListener.class, listenerTwo, emitterOne);
       
       notificationDispatcher.newLine("Call One");
       
@@ -71,17 +74,17 @@ public class NotificationServiceTest {
       
       
       for (int i=0 ; i < notifyLoop ; i++) {
-         Emmiter localEmitterOne = new Emmiter();
-         IEmmiterListener notificationDispatcher = notificationBus.getNotificationDispatcher(IEmmiterListener.class, localEmitterOne);
-         notificationBus.addListener(IEmmiterListener.class, listenerOne, localEmitterOne);
-         notificationBus.addListener(IEmmiterListener.class, listenerTwo, localEmitterOne);
+         TestEmitter localEmitterOne = new TestEmitter();
+         ITestEmitterListener notificationDispatcher = notificationBus.getNotificationDispatcher(ITestEmitterListener.class, localEmitterOne);
+         notificationBus.addListener(ITestEmitterListener.class, listenerOne, localEmitterOne);
+         notificationBus.addListener(ITestEmitterListener.class, listenerTwo, localEmitterOne);
          notificationDispatcher.newLine("Bla");
          localEmitterOne = null;    
       }
       
       // we loop here because the gc is not really forced, therefore we requesting it a couple of times
       int loopCounter = 0;
-      while(notificationBus.getListenerStorage(IEmmiterListener.class).qualifiedListeners.size() > 0) {
+      while(notificationBus.getListenerStorage(ITestEmitterListener.class).qualifiedListeners.size() > 0) {
          System.gc();
          loopCounter++;
          assertTrue("emitter reference could not be cleard", loopCounter < 50 );
@@ -111,33 +114,33 @@ public class NotificationServiceTest {
       control.replay();
       
       NotificationService notificationBus = new NotificationService();
-      IEmmiterListener notificationDispatcher = notificationBus.getNotificationDispatcher(IEmmiterListener.class, emitterOne);
+      ITestEmitterListener notificationDispatcher = notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterOne);
       
       notificationDispatcher.newLine("Call 1");
       
-      notificationBus.addListener(IEmmiterListener.class, listenerOne, emitterOne);
+      notificationBus.addListener(ITestEmitterListener.class, listenerOne, emitterOne);
       
       notificationDispatcher.newLine("Call 2");
       
-      notificationBus.addListener(IEmmiterListener.class, listenerTwo, emitterOne);
+      notificationBus.addListener(ITestEmitterListener.class, listenerTwo, emitterOne);
       
       notificationDispatcher.newLine("Call 3");
       
-      notificationBus.addListener(IEmmiterListener.class, listenerThree);
+      notificationBus.addListener(ITestEmitterListener.class, listenerThree);
       
       notificationDispatcher.newLine("Call 4");
       
-      assertTrue(notificationBus.removeListener(IEmmiterListener.class, listenerOne, emitterOne));
+      assertTrue(notificationBus.removeListener(ITestEmitterListener.class, listenerOne, emitterOne));
       
       notificationDispatcher.newLine("Call 5");
       
-      assertFalse(notificationBus.removeListener(IEmmiterListener.class, listenerOne, emitterOne));
-      assertTrue(notificationBus.removeListener(IEmmiterListener.class, listenerThree));
+      assertFalse(notificationBus.removeListener(ITestEmitterListener.class, listenerOne, emitterOne));
+      assertTrue(notificationBus.removeListener(ITestEmitterListener.class, listenerThree));
       
       notificationDispatcher.newLine("Call 6");
       
-      assertFalse(notificationBus.removeListener(IEmmiterListener.class, listenerThree));
-      assertTrue(notificationBus.removeListener(IEmmiterListener.class, listenerTwo, emitterOne));
+      assertFalse(notificationBus.removeListener(ITestEmitterListener.class, listenerThree));
+      assertTrue(notificationBus.removeListener(ITestEmitterListener.class, listenerTwo, emitterOne));
       
       notificationDispatcher.newLine("Call 7");
       
@@ -155,11 +158,11 @@ public class NotificationServiceTest {
       
       NotificationService notificationBus = new NotificationService();
       
-      notificationBus.addListener(IEmmiterListener.class, listenerOne, emitterOne);
-      notificationBus.addListener(IEmmiterListener.class, listenerTwo, emitterTwo);
+      notificationBus.addListener(ITestEmitterListener.class, listenerOne, emitterOne);
+      notificationBus.addListener(ITestEmitterListener.class, listenerTwo, emitterTwo);
       
-      notificationBus.getNotificationDispatcher(IEmmiterListener.class, emitterOne).newLine("Call One");
-      notificationBus.getNotificationDispatcher(IEmmiterListener.class, emitterTwo).newLine("Call Two");
+      notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterOne).newLine("Call One");
+      notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterTwo).newLine("Call Two");
       
       control.verify();
       
@@ -167,15 +170,15 @@ public class NotificationServiceTest {
 
  
 
-   private static interface IEmmiter {
+   private static interface ITestEmitter extends IEmitter {
    
    }
    
-   private static interface IEmmiterListener extends IListener {
+   private static interface ITestEmitterListener extends IListener {
       void newLine(String message);
    }
    
-   private static class Emmiter implements IEmmiter {
+   private static class TestEmitter implements ITestEmitter {
       
    }
    

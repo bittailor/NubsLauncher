@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.infrastructure;
+package com.netstal.tools.nubs.launcher.infrastructure.notification;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.swing.SwingUtilities;
+
 
 
 public class NotificationService implements INotificationService {
@@ -44,7 +45,7 @@ public class NotificationService implements INotificationService {
    }
    
    protected static class ListenerStorage {
-      public Map<Object,List<ListenerEntry>> qualifiedListeners = new  WeakHashMap<Object, List<ListenerEntry>>();
+      public Map<IEmitter,List<ListenerEntry>> qualifiedListeners = new  WeakHashMap<IEmitter, List<ListenerEntry>>();
       public List<ListenerEntry> unqualifiedListeners = new LinkedList<ListenerEntry>();
    }
    
@@ -62,7 +63,9 @@ public class NotificationService implements INotificationService {
       public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
          int totalNumberOfListeners = 0;
          for (List<ListenerEntry> listeners : listOfListeners) {
-            totalNumberOfListeners = totalNumberOfListeners + listeners.size();
+            synchronized (listeners) {
+               totalNumberOfListeners = totalNumberOfListeners + listeners.size();               
+            }
          }
          
          if (totalNumberOfListeners == 0) {
@@ -74,11 +77,13 @@ public class NotificationService implements INotificationService {
          final List<IListener> swingListeners = new ArrayList<IListener>(totalNumberOfListeners); 
          
          for (List<ListenerEntry> listeners : listOfListeners) {
-            for (ListenerEntry listenerEntry : listeners) {
-               if (listenerEntry.callInSwingThread) {
-                  swingListeners.add(listenerEntry.listener);
-               } else {
-                  directListeners.add(listenerEntry.listener);
+            synchronized (listeners) {               
+               for (ListenerEntry listenerEntry : listeners) {
+                  if (listenerEntry.callInSwingThread) {
+                     swingListeners.add(listenerEntry.listener);
+                  } else {
+                     directListeners.add(listenerEntry.listener);
+                  }
                }
             }
          }
@@ -88,6 +93,7 @@ public class NotificationService implements INotificationService {
          for (IListener listener : directListeners) {
             returnValue = method.invoke(listener, args);
          }
+         
          SwingUtilities.invokeLater(new Runnable() {              
                @Override
                public void run() {
@@ -109,39 +115,47 @@ public class NotificationService implements INotificationService {
    private Map<Class<?>,ListenerStorage> storageMap = new HashMap<Class<?>, NotificationService.ListenerStorage>(); 
    
    @Override
-   public <T extends IListener> void addListener(Class<T> listenerInterface, T listener, Object emitter) {
+   public <T extends IListener> void addListener(Class<T> listenerInterface, T listener, IEmitter emitter) {
       List<ListenerEntry> listeners = get(listenerInterface,emitter);
-      listeners.add(new ListenerEntry(listener,false));
+      synchronized (listeners) {         
+         listeners.add(new ListenerEntry(listener,false));
+      }
    }
    
    @Override
-   public <T extends IListener> void addListenerInSwingThread(Class<T> listenerInterface, T listener, Object emitter) {
+   public <T extends IListener> void addListenerInSwingThread(Class<T> listenerInterface, T listener, IEmitter emitter) {
       List<ListenerEntry> listeners = get(listenerInterface,emitter);
-      listeners.add(new ListenerEntry(listener,true));
+      synchronized (listeners) {
+         listeners.add(new ListenerEntry(listener,true));
+      }
    }
    
    @Override
    public <T extends IListener> void addListener(Class<T> listenerInterface, T listener) {
       List<ListenerEntry> listeners = get(listenerInterface);
-      listeners.add(new ListenerEntry(listener,false));
+      synchronized (listeners) {         
+         listeners.add(new ListenerEntry(listener,false));
+      } 
    }
    
    @Override
    public <T extends IListener> void addListenerInSwingThread(Class<T> listenerInterface, T listener) {
       List<ListenerEntry> listeners = get(listenerInterface);
-      listeners.add(new ListenerEntry(listener,true));
+      synchronized (listeners) {
+         listeners.add(new ListenerEntry(listener,true));
+      }
    }
    
    @Override
-   public <T extends IListener> boolean removeListener(Class<T> listenerInterface, T listener, Object emitter) {
+   public <T extends IListener> boolean removeListener(Class<T> listenerInterface, T listener, IEmitter emitter) {
       List<ListenerEntry> listeners = lookup(listenerInterface,emitter);
       if (listener == null) {
          return false;
       }
       
-      boolean removed = listeners.remove(new ListenerEntry(listener));
-    
-      return removed;
+      synchronized (listeners) {
+         return listeners.remove(new ListenerEntry(listener));         
+      }
    }
    
    @Override
@@ -151,12 +165,14 @@ public class NotificationService implements INotificationService {
          return false;
       }
       
-      return listeners.remove(new ListenerEntry(listener));
+      synchronized (listeners) {
+         return listeners.remove(new ListenerEntry(listener));
+      }
    }
    
    @Override
    @SuppressWarnings("unchecked")
-   public <T extends IListener> T getNotificationDispatcher(Class<T> listenerInterface, Object emitter) {
+   public <T extends IListener> T getNotificationDispatcher(Class<T> listenerInterface, IEmitter emitter) {
       List<ListenerEntry> unqualifiedListeners = get(listenerInterface);      
       List<ListenerEntry> qualifiedListeners = get(listenerInterface,emitter);
           
@@ -164,30 +180,39 @@ public class NotificationService implements INotificationService {
       return (T) Proxy.newProxyInstance(listenerInterface.getClassLoader(), new Class[] { listenerInterface }, handler);
    }
    
-   private <T> List<ListenerEntry> get(Class<T> listenerInterface, Object emitter) {
+   private <T> List<ListenerEntry> get(Class<T> listenerInterface, IEmitter emitter) {
       ListenerStorage listenerStorage = getListenerStorage(listenerInterface);
       
-      List<ListenerEntry> listeners = listenerStorage.qualifiedListeners.get(emitter);
-      if (listeners==null) {
-         listeners = new LinkedList<ListenerEntry>();
-         listenerStorage.qualifiedListeners.put(emitter, listeners);
+      synchronized (listenerStorage) {         
+         List<ListenerEntry> listeners = listenerStorage.qualifiedListeners.get(emitter);
+         if (listeners==null) {
+            listeners = new LinkedList<ListenerEntry>();
+            listenerStorage.qualifiedListeners.put(emitter, listeners);
+         }
+         
+         return listeners;
       }
       
-      return listeners;
    }
 
-   private <T> List<ListenerEntry> lookup(Class<T> listenerInterface, Object emitter) {
-      ListenerStorage listenerStorage = storageMap.get(listenerInterface);
-      if (listenerStorage==null) {
-         return null;
-      }
+   private <T> List<ListenerEntry> lookup(Class<T> listenerInterface, IEmitter emitter) {
       
-      List<ListenerEntry> listeners = listenerStorage.qualifiedListeners.get(emitter);
-      if (listeners==null) {
-         return null;
+      ListenerStorage listenerStorage;
+      synchronized (storageMap) {
+         listenerStorage = storageMap.get(listenerInterface);
+         if (listenerStorage==null) {
+            return null;
+         }         
       }
-      
-      return listeners;
+               
+      synchronized (listenerStorage) {
+         List<ListenerEntry> listeners = listenerStorage.qualifiedListeners.get(emitter);
+         if (listeners==null) {
+            return null;
+         }
+         
+         return listeners;
+      }
    }
    
    private <T> List<ListenerEntry> get(Class<T> listenerInterface) {
@@ -195,20 +220,24 @@ public class NotificationService implements INotificationService {
    }
    
    private <T> List<ListenerEntry> lookup(Class<T> listenerInterface) {
-      ListenerStorage listenerStorage = storageMap.get(listenerInterface);
-      if (listenerStorage==null) {
-         return null;
-      }    
-      return listenerStorage.unqualifiedListeners;
+      synchronized (storageMap) {
+         ListenerStorage listenerStorage = storageMap.get(listenerInterface);
+         if (listenerStorage==null) {
+            return null;
+         }    
+         return listenerStorage.unqualifiedListeners;
+      }
    }
    
    protected <T> ListenerStorage getListenerStorage(Class<T> listenerInterface) {
-      ListenerStorage listenerStorage = storageMap.get(listenerInterface);
-      if (listenerStorage==null) {
-         listenerStorage = new ListenerStorage();
-         storageMap.put(listenerInterface, listenerStorage);
-      }
-      return listenerStorage;
+      synchronized (storageMap) {
+         ListenerStorage listenerStorage = storageMap.get(listenerInterface);
+         if (listenerStorage==null) {
+            listenerStorage = new ListenerStorage();
+            storageMap.put(listenerInterface, listenerStorage);
+         }         
+         return listenerStorage;
+      }      
    }
       
 }
