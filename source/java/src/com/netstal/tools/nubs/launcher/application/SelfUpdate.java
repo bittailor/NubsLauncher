@@ -118,7 +118,7 @@ public class SelfUpdate {
    private boolean launchSelfUpdate() {
       try {
          processBuilderProvider.get()
-            .command("cmd","/C","start","cmd","/C",new File(getServerDirectory(),"install.rb").getAbsolutePath(),"-u")
+            .command("cmd","/C","start","cmd","/C",new File(getServerDirectory(),"ruby.exe install.rb").getAbsolutePath(),"-u")
             .start();
          return true;
       }
