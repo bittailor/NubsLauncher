@@ -116,6 +116,7 @@ public class NotificationService implements INotificationService {
    
    @Override
    public <T extends IListener> void addListener(Class<T> listenerInterface, T listener, IEmitter emitter) {
+      checkEmitter(listenerInterface,emitter);
       List<ListenerEntry> listeners = get(listenerInterface,emitter);
       synchronized (listeners) {         
          listeners.add(new ListenerEntry(listener,false));
@@ -124,6 +125,7 @@ public class NotificationService implements INotificationService {
    
    @Override
    public <T extends IListener> void addListenerInSwingThread(Class<T> listenerInterface, T listener, IEmitter emitter) {
+      checkEmitter(listenerInterface,emitter);
       List<ListenerEntry> listeners = get(listenerInterface,emitter);
       synchronized (listeners) {
          listeners.add(new ListenerEntry(listener,true));
@@ -148,6 +150,7 @@ public class NotificationService implements INotificationService {
    
    @Override
    public <T extends IListener> boolean removeListener(Class<T> listenerInterface, T listener, IEmitter emitter) {
+      checkEmitter(listenerInterface,emitter);
       List<ListenerEntry> listeners = lookup(listenerInterface,emitter);
       if (listener == null) {
          return false;
@@ -239,5 +242,30 @@ public class NotificationService implements INotificationService {
          return listenerStorage;
       }      
    }
+   
+   private <T> void checkEmitter(Class<T> listenerInterface, IEmitter emitter) {
+      /*
+      Class<? extends IEmitter> emitterClass = emitter.getClass();
+
+      Set<Notifies> annotations = new HashSet<Notifies>();
+      annotations.add(emitterClass.getAnnotation(Notifies.class));
+      emitterClass.getSu
+      for (Class<?> aInterface : emitterClass.getInterfaces()) {
+         annotations.add(aInterface.getAnnotation(Notifies.class));
+      }
+      
+      
+      
+      Notifies annotation = emitterClass.getAnnotation(Notifies.class);
+      if (annotation == null) {
+         throw new IllegalArgumentException("Class " + emitterClass.getName() + " Has No " + Notifies.class.getName() + " Annotation");
+      }
+      if (Arrays.binarySearch(annotation.value(), listenerInterface) == -1) {
+         throw new IllegalArgumentException("Class " + emitterClass.getName() + " Does Not Notify " + listenerInterface.getName() );
+      }
+      */
+   }
+   
+   
       
 }

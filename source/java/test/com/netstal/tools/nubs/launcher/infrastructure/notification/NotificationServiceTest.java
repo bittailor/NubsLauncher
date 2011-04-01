@@ -5,13 +5,17 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.SwingUtilities;
+
+import org.easymock.IAnswer;
 import org.easymock.IMocksControl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.netstal.tools.nubs.launcher.infrastructure.notification.IListener;
-import com.netstal.tools.nubs.launcher.infrastructure.notification.NotificationService;
 
 public class NotificationServiceTest {
 
@@ -167,9 +171,94 @@ public class NotificationServiceTest {
       control.verify();
       
    }
+   
+   @Test
+   public void testSwingNoSwingListener() throws InterruptedException {
+      
+      final Thread callThread = Thread.currentThread();
+      
+      final BlockingQueue<Boolean> inCallThread = new ArrayBlockingQueue<Boolean>(1);
+      final BlockingQueue<Boolean> inSwingThread = new ArrayBlockingQueue<Boolean>(1);
+      
+      listenerOne.newLine("Call");
+      expectLastCall().andAnswer(new IAnswer<Object>() {
+         @Override
+         public Object answer() throws Throwable {
+            inCallThread.put(callThread.equals(Thread.currentThread()));
+            return null;
+         }
+      });
+      
+      listenerTwo.newLine("Call");
+      expectLastCall().andAnswer(new IAnswer<Object>() {
+         @Override
+         public Object answer() throws Throwable {
+            inSwingThread.put(SwingUtilities.isEventDispatchThread());
+            return null;
+         }
+      });
+      
+      control.replay();
+      
+      NotificationService notificationBus = new NotificationService();
+      
+      notificationBus.addListener(ITestEmitterListener.class, listenerOne, emitterOne);
+      notificationBus.addListenerInSwingThread(ITestEmitterListener.class, listenerTwo, emitterOne);
+      
+      notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterOne).newLine("Call");
+      
+      assertTrue(inCallThread.poll(1, TimeUnit.SECONDS));
+      assertTrue(inSwingThread.poll(1, TimeUnit.SECONDS));
+      
+      control.verify();
+      
+   }
+   
+   @Test
+   public void testSwingNoSwingUnqualifiedListener() throws InterruptedException {
+      
+      final Thread callThread = Thread.currentThread();
+      
+      final BlockingQueue<Boolean> inCallThread = new ArrayBlockingQueue<Boolean>(1);
+      final BlockingQueue<Boolean> inSwingThread = new ArrayBlockingQueue<Boolean>(1);
+      
+      listenerOne.newLine("Call");
+      expectLastCall().andAnswer(new IAnswer<Object>() {
+         @Override
+         public Object answer() throws Throwable {
+            inCallThread.put(callThread.equals(Thread.currentThread()));
+            return null;
+         }
+      });
+      
+      listenerTwo.newLine("Call");
+      expectLastCall().andAnswer(new IAnswer<Object>() {
+         @Override
+         public Object answer() throws Throwable {
+            inSwingThread.put(SwingUtilities.isEventDispatchThread());
+            return null;
+         }
+      });
+      
+      control.replay();
+      
+      NotificationService notificationBus = new NotificationService();
+      
+      notificationBus.addListener(ITestEmitterListener.class, listenerOne);
+      notificationBus.addListenerInSwingThread(ITestEmitterListener.class, listenerTwo);
+      
+      notificationBus.getNotificationDispatcher(ITestEmitterListener.class, emitterOne).newLine("Call");
+      
+      assertTrue(inCallThread.poll(1, TimeUnit.SECONDS));
+      assertTrue(inSwingThread.poll(1, TimeUnit.SECONDS));
+      
+      control.verify();
+      
+   }
 
  
 
+   @Notifies({ITestEmitterListener.class})
    private static interface ITestEmitter extends IEmitter {
    
    }
