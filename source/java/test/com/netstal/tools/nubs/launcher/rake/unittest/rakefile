@@ -7,9 +7,6 @@ def useTime()
 	sleep(2)
 end
 
-# Simulate long rake loading
-sleep(20)
-
 # -----------------------------------------------------------------------
 
 task :ProjectOne_generate
@@ -38,12 +35,54 @@ task :default => [:ProjectTwo]
 task :Application_generate
 task :Application_deploy
 
-if false
+# -----------------------------------------------------------------------
 
-	task :N1
-	task :N2
-	task :N3
-	task :N4
-
+task :Fail_build_dpu_only do
+	useTime()
+	puts "Just Fail ==> Problem xyz"
+    $stdout.flush
+	fail("Just Fail")
 end
 
+# -----------------------------------------------------------------------
+
+task :FailFast do
+	puts "Just FailFast ==> Problem xyz"
+    $stdout.flush
+	fail("Just Fail FailFast")
+end
+
+# -----------------------------------------------------------------------
+
+task :TimeOne do
+	useTime()	
+end
+
+task :TimeTwo => [:TimeOne]  do
+	useTime()
+end
+
+task :Time => [:TimeTwo]  do
+    useTime()
+end
+
+# -----------------------------------------------------------------------
+
+failOnce_A_guard = true
+task :FailOnce_A => [:TimeTwo] do
+	if(failOnce_A_guard)		
+		failOnce_A_guard = false
+		fail("FailOnce")
+	end			
+end 
+
+task :FailOnce => [:FailOnce_A] 
+
+
+task :ShowVariableBjam do 
+  puts ENV["bjam_targets"]
+end
+
+task :ShowVariableIgnore do
+  puts ENV["ignore_deps"]
+end

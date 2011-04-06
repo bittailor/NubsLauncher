@@ -7,7 +7,7 @@ public class TestUtility {
 
    
    public static File getRakeTestWorkspaceRoot() {
-      URL resource = TestUtility.class.getResource("../rake/regular");
+      URL resource = TestUtility.class.getResource("../rake/unittest");
       File directory = new File(resource.getFile());
       return directory;
    }
