@@ -9,6 +9,7 @@ package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -62,7 +63,16 @@ public class SuggestTaskTool extends AbstractTool {
    private void createUi() { 
       suggestList = new JList(suggestListModel);
       suggestList.setFocusable(false);
-      
+      PopupListDecorator popupListDecorator = new PopupListDecorator(suggestList);
+      popupListDecorator.addActionListener(new ActionListener() {
+         
+         @Override
+         public void actionPerformed(ActionEvent e) {
+            enter(e);
+            
+         }
+      });
+          
       JScrollPane scrollPane = new JScrollPane(suggestList);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setFocusable(false);
@@ -77,8 +87,8 @@ public class SuggestTaskTool extends AbstractTool {
    
    
    @Override
-   public void initialize(JTextField tasksTextField) {
-      super.initialize(tasksTextField);
+   public void initialize(JTextField tasksTextField, IToolListener listener) {
+      super.initialize(tasksTextField, listener);
       getTasksField().getDocument().addDocumentListener(new DocumentListener() {        
          @Override
          public void removeUpdate(DocumentEvent e) {
@@ -121,12 +131,15 @@ public class SuggestTaskTool extends AbstractTool {
 
    @Override
    public void enter(ActionEvent event) {
+      closeSuggestPopup();     
       insertCurrentSuggestSelection();
+      getListener().finished();
    }
 
    @Override
    public void escape(ActionEvent event) {
       closeSuggestPopup();
+      getListener().finished();
    }
    
    private void showSuggestPopup() {
@@ -171,7 +184,6 @@ public class SuggestTaskTool extends AbstractTool {
    }
    
    public void insertCurrentSuggestSelection() {
-      closeSuggestPopup();
       if (suggestList.isSelectionEmpty()) {
          return;
       }

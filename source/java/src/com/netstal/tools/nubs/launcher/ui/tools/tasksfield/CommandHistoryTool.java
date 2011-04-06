@@ -8,6 +8,7 @@ package com.netstal.tools.nubs.launcher.ui.tools.tasksfield;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
@@ -37,6 +38,15 @@ public class CommandHistoryTool extends AbstractTool {
       historyModel = new DefaultListModel();
       historyList = new JList(historyModel);
       historyList.setFocusable(false);
+      PopupListDecorator popupListDecorator = new PopupListDecorator(historyList);
+      popupListDecorator.addActionListener(new ActionListener() {
+         
+         @Override
+         public void actionPerformed(ActionEvent e) {
+            enter(e);
+            
+         }
+      });
       
       JScrollPane scrollPane = new JScrollPane(historyList);
       scrollPane.setBorder(null);
@@ -83,11 +93,13 @@ public class CommandHistoryTool extends AbstractTool {
       }
       getTasksField().setText(selectedValue.toString());
       closePopup();
+      getListener().finished();
    }
    
    @Override
    public void escape(ActionEvent event) {
       closePopup();
+      getListener().finished();
    }
    
    private void showPopup() {

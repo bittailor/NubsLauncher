@@ -23,6 +23,8 @@ public final class LaunchRakeTool implements ITool {
    
    private final IRakeLauncher launcher;
    private JTextField tasksField;
+   private IToolListener listener;
+
    
    @Inject
    public LaunchRakeTool(IRakeLauncher launcher) {
@@ -30,8 +32,9 @@ public final class LaunchRakeTool implements ITool {
    }
 
    @Override
-   public void initialize(JTextField tasksTextField) {
+   public void initialize(JTextField tasksTextField, IToolListener toolListener) {
       this.tasksField = tasksTextField;
+      this.listener = toolListener;
    }
 
    @Override
@@ -54,11 +57,13 @@ public final class LaunchRakeTool implements ITool {
       }
       catch (IOException exception) {
          LOG.log(Level.SEVERE, "Problem Launching Rake", exception);
-      }      
+      }
+      listener.finished();
    }
 
    @Override
    public void escape(ActionEvent event) {
+      listener.finished();
    }
    
 }

@@ -13,19 +13,26 @@ public abstract class AbstractTool implements ITool {
 
    private final KeyStroke triggerKeyStroke;
    private JTextField tasksField;
+   private IToolListener listener;
    
    public AbstractTool(KeyStroke triggerKeyStroke) {
       this.triggerKeyStroke = triggerKeyStroke;
    }
 
    @Override
-   public void initialize(JTextField tasksTextField) {
+   public void initialize(JTextField tasksTextField, IToolListener toolListener) {
       this.tasksField = tasksTextField;
+      this.listener = toolListener;
       tasksField.getInputMap().put(triggerKeyStroke,this);
    }
 
-   public JTextField getTasksField() {
+   protected JTextField getTasksField() {
       return tasksField;
    }
+
+   protected IToolListener getListener() {
+      return listener;
+   }
+   
    
 }

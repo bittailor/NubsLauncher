@@ -12,7 +12,7 @@ import javax.swing.JTextField;
 
 public interface ITool {
    
-   public void initialize(JTextField tasksTextField);
+   public void initialize(JTextField tasksTextField, IToolListener toolListener);
    
    public void activate();
    public void keyUp();

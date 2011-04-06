@@ -13,9 +13,10 @@ import javax.swing.KeyStroke;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.ITool;
+import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.IToolListener;
 import com.netstal.tools.nubs.launcher.ui.tools.tasksfield.IToolsFactory;
 
-public class RakeTasksField extends JPanel {
+public class RakeTasksField extends JPanel implements IToolListener {
    
    private static final long serialVersionUID = 1L;
    private static final String KEY_DOWN = "Key Down";
@@ -35,11 +36,11 @@ public class RakeTasksField extends JPanel {
       }
       defaultTool = tasksFieldToolsFactory.createDefaultTool();
       currentTool = defaultTool;
-      defaultTool.initialize(tasksField);
+      defaultTool.initialize(tasksField,this);
    }
    
    private void addTool(final ITool tool) {
-      tool.initialize(tasksField);
+      tool.initialize(tasksField,this);
       tasksField.getActionMap().put(tool,new AbstractAction() {
          private static final long serialVersionUID = 1L;
          @Override
@@ -64,7 +65,6 @@ public class RakeTasksField extends JPanel {
          @Override
          public void actionPerformed(ActionEvent actionEvent) {
             currentTool.escape(actionEvent);
-            currentTool = defaultTool;
          }     
       });
       
@@ -90,13 +90,17 @@ public class RakeTasksField extends JPanel {
          @Override
          public void actionPerformed(ActionEvent event) {
             currentTool.enter(event);
-            currentTool = defaultTool;
          }
       });
    }
      
    public JTextField getTextField() {
       return tasksField;
+   }
+
+   @Override
+   public void finished() {
+      currentTool = defaultTool;
    }
    
 }
