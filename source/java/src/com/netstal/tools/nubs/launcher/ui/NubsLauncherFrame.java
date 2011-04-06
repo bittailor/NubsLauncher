@@ -106,7 +106,7 @@ public class NubsLauncherFrame extends JFrame {
 
          @Override
          protected void done() {
-            changeLayer(MAIN_LAYER);            
+            // changeLayer(MAIN_LAYER);            
          }
       };
       worker.execute();
@@ -161,6 +161,9 @@ public class NubsLauncherFrame extends JFrame {
       tasksLabel.setText(workspace.getTasks().size() +" Tasks @ ");
       workspaceLabel.setText(workspace.getRoot() + "  ");
       setFrameInfo(workspace.getRoot().getName());
+      if (workspace.areTasksLoaded()) {
+         changeLayer(MAIN_LAYER);  
+      }
    }
    
    private void setFrameInfo(String info) {

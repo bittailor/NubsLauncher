@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +19,8 @@ import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 
 public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
+
+   static final String WORKSPACE_CACHE_PATH = "workspace.CachePath";
 
    private static Logger LOG = Logger.getLogger(Workspace.class.getName());
    
@@ -82,9 +86,68 @@ public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
    
    @Override
    public void loadTasks() {
+      if (cacheFileExists()) {
+         loadCache();
+         notifyEventListeners(this);
+      }
+      reloadTasks();
+   }
+   
+   
+
+   @Override
+   public void reloadTasks() {
       tasks = importer.importTasks(workspaceRoot);
+      storeCache();
       notifyEventListeners(this);
+   }
+   
+   private boolean cacheFileExists() {
+      return getCacheFile().exists();
+   }
+   
+   private void loadCache() {
+      ObjectInputStream in = null;
       
+      try {
+         in = new ObjectInputStream(new FileInputStream(getCacheFile()));
+         Object object = in.readObject();
+         if (object instanceof SortedMap) {
+            @SuppressWarnings("unchecked")
+            SortedMap<String, RakeTask> cachedTasks = (SortedMap<String, RakeTask>) object;  
+            tasks = cachedTasks;
+            LOG.log(Level.INFO, "Cached tasks loaded from " + getCacheFile());
+            notifyEventListeners(this);
+         }
+      }
+      catch (Exception e) {
+         LOG.log(Level.SEVERE, "Problem loading cached tasks",e);
+      }
+      finally {
+         StreamUtility.close(in);
+      }   
+   }
+   
+   private void storeCache() {
+      ObjectOutputStream out = null;
+      try {
+         File cacheFile = getCacheFile();
+         if (cacheFile.getParentFile().mkdirs()) {
+            throw new IOException("Could not create directories for workspace cache : " + cacheFile.getParentFile());
+         }
+         out = new ObjectOutputStream(new FileOutputStream(getCacheFile()));
+         out.writeObject(tasks);
+      }
+      catch (Exception e) {
+         LOG.log(Level.SEVERE, "Problem storing cached tasks",e);
+      } 
+      finally {
+         StreamUtility.close(out);
+      }       
+   }
+   
+   private File getCacheFile() {
+      return new File(workspaceRoot,configuration.get(WORKSPACE_CACHE_PATH));
    }
    
    private boolean isValidRoot(File root) {

@@ -20,6 +20,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.netstal.tools.nubs.launcher.test.TestUtility;
+
 public class WorkspaceTest {
 
    private IMocksControl control;
@@ -31,7 +33,7 @@ public class WorkspaceTest {
 
    @Before
    public void setUp() throws Exception {
-	  root = new File(System.getProperty("user.dir"),"nms");
+	  root = TestUtility.getRakeTestWorkspaceRoot() ;
       
 	  control = createControl();
      importer = control.createMock("importer", IRakeTaskImporter.class);
@@ -43,6 +45,7 @@ public class WorkspaceTest {
      }
      
      expect(configuration.getConfigurationDirectory()).andReturn(configurationDirectory).anyTimes();
+     expect(configuration.get(Workspace.WORKSPACE_CACHE_PATH)).andReturn("bin/nubslauncher/Tasks.cache").anyTimes();
    }
    
    @After

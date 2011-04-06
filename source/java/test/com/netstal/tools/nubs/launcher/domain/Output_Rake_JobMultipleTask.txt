@@ -1,4 +1,4 @@
-(in /Users/gekko/Documents/code/jNmGit/NubsLauncher/source/rake/src)
+(in ...)
 ** Invoke ProjectOne_build_ipc_only (first_time)
 ** Execute ProjectOne_build_ipc_only
 Doing the work of ProjectOne_build_ipc_only

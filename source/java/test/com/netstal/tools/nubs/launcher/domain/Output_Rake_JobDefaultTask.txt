@@ -1,4 +1,4 @@
-(in /Users/gekko/Documents/code/jNmGit/NubsLauncher/source/rake/src)
+(in ...)
 ** Invoke default (first_time)
 ** Invoke ProjectOne (first_time)
 ** Invoke ProjectOne_generate (first_time)

@@ -1,9 +1,10 @@
 package com.netstal.tools.nubs.launcher.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RakeTask {
+public class RakeTask implements Serializable {
 
    private final String name;
    private List<RakeTask> dependencies = new ArrayList<RakeTask>();

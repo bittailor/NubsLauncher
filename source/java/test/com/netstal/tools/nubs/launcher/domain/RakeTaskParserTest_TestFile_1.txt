@@ -1,4 +1,4 @@
-(in /Users/gekko/Documents/code/jNetstal/NubsCockpit/source/rake/src)
+(in ...)
 rake ProjectOne
     ProjectOne_generate
     ProjectOne_build_ipc_only
