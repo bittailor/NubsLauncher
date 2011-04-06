@@ -74,7 +74,8 @@ public class Configuration implements IConfiguration {
       return userPropertiesFile;
    }
    
-   private File getConfigurationDirectory() {
+   @Override
+   public File getConfigurationDirectory() {
       return new File(System.getProperty("user.home"),".nubslauncher");
    }
   

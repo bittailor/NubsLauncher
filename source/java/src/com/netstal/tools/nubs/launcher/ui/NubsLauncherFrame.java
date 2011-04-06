@@ -23,7 +23,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.inject.Inject;
@@ -72,28 +71,36 @@ public class NubsLauncherFrame extends JFrame {
       
       createUi();
       
-      this.workspace.addListener(new IEventListener<IWorkspace>() {
+      this.workspace.addListenerNotifyInSwingDispatchThread(new IEventListener<IWorkspace>() {
          @Override
          public void notifyEvent(IWorkspace source) {
-            SwingUtilities.invokeLater(new Runnable() {
-               @Override
-               public void run() {
-                  notifyWorkspaceChanged();
-               }
-            });
+            notifyWorkspaceChanged();
          }
       });
       pack();
    }
+   
+   public void start() {
+      if (!workspace.hasValidRoot()) {
+         selectWorkspaceDirectory();
+      } else {
+         loadTasks();
+      }
+   }
 
    public void changeWorkspace(final File workspaceDirectory) {
+      workspace.setRoot(workspaceDirectory);
+      loadTasks();
+   }
+   
+   private void loadTasks() {
       setFrameInfo("loading ...");
       changeLayer(LOAD_LAYER);
       SwingWorker<Void,Void> worker = new SwingWorker<Void, Void>() {
 
          @Override
          protected Void doInBackground() throws Exception {
-            workspace.setRoot(workspaceDirectory);
+            workspace.loadTasks();
             return null;
          }
 

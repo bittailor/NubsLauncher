@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -90,20 +89,13 @@ public class JobPanel extends JPanel {
          }
       });
       
-      rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {       
+      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob>() {       
          @Override
          public void notifyEvent(final IRakeJob job) {
-
-            SwingUtilities.invokeLater(new Runnable() {               
-               @Override
-               public void run() {
-                  jobsChanged();  
-                  
-                  if (job.getState().equals(Failed.INSTANCE)) {
-                     showRetryGui(job);
-                  }
-               }                  
-            });              
+            jobsChanged();  
+            if (job.getState().equals(Failed.INSTANCE)) {
+               showRetryGui(job);
+            }
          }
       });
    }

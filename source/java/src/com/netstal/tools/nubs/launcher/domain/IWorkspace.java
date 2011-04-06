@@ -5,8 +5,11 @@ import java.util.Collection;
 
 public interface IWorkspace extends IEventSource<IWorkspace> {
    
+   public boolean hasValidRoot();
+   public boolean areTasksLoaded();
    public void setRoot(File rootFolder);
    public File getRoot();
+   public void loadTasks();
    public Collection<RakeTask> getTasks();
    
 }

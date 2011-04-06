@@ -9,26 +9,46 @@ package com.netstal.tools.nubs.launcher.domain;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * 
- */
+import javax.swing.SwingUtilities;
+
 public class EventSource<Source> implements IEventSource<Source> {
 
-   private List<IEventListener<Source>> sources = new LinkedList<IEventListener<Source>>();
+   private List<IEventListener<Source>> listeners = new LinkedList<IEventListener<Source>>();
+   private List<IEventListener<Source>> swingListeners = new LinkedList<IEventListener<Source>>();
    
    @Override
    public void addListener(IEventListener<Source> listener) {
-      sources.add(listener);
-   }
-
-   @Override
-   public void removeListener(IEventListener<Source> listener) {
-      sources.remove(listener);
+      listeners.add(listener);
    }
    
-   public void notifyEventListeners(Source source) {
-      for (IEventListener<Source> listener : sources) {
+   public void addListenerNotifyInSwingDispatchThread(IEventListener<Source> listener) {
+      swingListeners.add(listener);
+   }
+   
+   @Override
+   public void removeListener(IEventListener<Source> listener) {
+      if (!listeners.remove(listener)) {
+         swingListeners.remove(listener);
+      }
+   }
+   
+   public void notifyEventListeners(final Source source) {
+      for (IEventListener<Source> listener : listeners) {
          listener.notifyEvent(source);
+      }
+      if (SwingUtilities.isEventDispatchThread()){
+         for (IEventListener<Source> listener : swingListeners) {
+            listener.notifyEvent(source);
+         }
+      } else {
+         SwingUtilities.invokeLater(new Runnable() {               
+            @Override
+            public void run() {
+               for (IEventListener<Source> listener : swingListeners) {
+                  listener.notifyEvent(source);
+               }
+            }                  
+         }); 
       }
    }
   

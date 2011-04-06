@@ -1,7 +1,6 @@
 package com.netstal.tools.nubs.launcher.ui;
 
 import javax.swing.AbstractListModel;
-import javax.swing.SwingUtilities;
 
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
@@ -16,7 +15,7 @@ public class JobListModel extends AbstractListModel {
    public JobListModel(IRakeJobRepository rakeJobRepository) {
       this.rakeJobRepository = rakeJobRepository;
       oldSize = getSize();
-      rakeJobRepository.addListener(new IEventListener<IRakeJobRepository>() {
+      rakeJobRepository.addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJobRepository>() {
          @Override
          public void notifyEvent(IRakeJobRepository source) {
             fireIntervalRemoved(JobListModel.this, 0, oldSize);
@@ -24,15 +23,10 @@ public class JobListModel extends AbstractListModel {
             oldSize = getSize(); 
          }
       });
-      rakeJobRepository.getJobsEventSource().addListener(new IEventListener<IRakeJob>() {     
+      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob>() {     
          @Override
          public void notifyEvent(final IRakeJob job) {
-            SwingUtilities.invokeLater(new Runnable() {               
-               @Override
-               public void run() {
-                  fireContentsChanged(JobListModel.this, 0, getSize());                             
-               }
-            });
+            fireContentsChanged(JobListModel.this, 0, getSize());                               
          }
       });
       

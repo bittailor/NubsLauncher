@@ -1,7 +1,6 @@
 package com.netstal.tools.nubs.launcher.application;
 
 import java.awt.SystemTray;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,16 +65,10 @@ public class NubsLauncher {
          return;
       }
       
-      String userDirectory = System.getProperty("user.dir");
       NubsLauncherFrame mainFrame = injector.getInstance(NubsLauncherFrame.class);      
       injector.getInstance(INotification.class);      
       mainFrame.setVisible(true);
-      if(new File(userDirectory,"rakefile").exists()) {
-         mainFrame.changeWorkspace(new File(userDirectory));
-      } else {
-         mainFrame.selectWorkspaceDirectory();
-      }   
-      
+      mainFrame.start();   
    }
    
    private Injector createInjector() {

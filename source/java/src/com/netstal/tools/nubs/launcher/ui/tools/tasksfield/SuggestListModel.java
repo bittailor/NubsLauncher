@@ -24,7 +24,7 @@ public class SuggestListModel extends AbstractListModel {
       super();
       this.filterChain = filterChain;
       oldSize = getTasks().size();
-      filterChain.addListener(new IEventListener<IFilterChain>() {
+      filterChain.addListenerNotifyInSwingDispatchThread(new IEventListener<IFilterChain>() {
          @Override
          public void notifyEvent(IFilterChain source) {
             fireIntervalRemoved(this, 0, oldSize);
