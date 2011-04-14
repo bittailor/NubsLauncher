@@ -138,6 +138,7 @@ public class NubsLauncherFrame extends JFrame {
       changeWorkspaceAction = new ChangeWorkspaceAction();
       toolBar.add(changeWorkspaceAction);
       toolBar.add(new ReloadTaksAction());
+      toolBar.add(new ResetBuildNumberAction(workspace));
       toolBar.add(new AboutAction(this,Version.getVersion()));
       toolBar.add(Box.createHorizontalGlue());
       tasksLabel = new JLabel("-");
