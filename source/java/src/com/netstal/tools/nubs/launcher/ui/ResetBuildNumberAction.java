@@ -51,9 +51,10 @@ public class ResetBuildNumberAction extends AbstractAction {
          File buildNumberFile = new File(workspace.getRoot(), BUILD_NUMBER_PATH);
          out = new PrintWriter(buildNumberFile);
          out.println(buildnumber);
+         LOG.log(Level.SEVERE, "Reset build number to " + buildnumber);
       }
       catch (IOException exception) {
-         LOG.log(Level.SEVERE, "Problem reseting build number",exception);
+         LOG.log(Level.INFO, "Problem reseting build number",exception);
       }
       finally {
          StreamUtility.close(out);
