@@ -48,6 +48,7 @@ public class JobPanel extends JPanel {
    private JList jobs;
 
    private OpenLogAction openAction;
+   private ShowTailAction showTailAction;
    private RetryAction retryAction;
    private IgonreAction igonreAction;
    private FailAction failAction;
@@ -55,6 +56,7 @@ public class JobPanel extends JPanel {
    private RelaunchAction relaunchAction;
 
    private RemoveAllFinishedAction removeAllFinishedAction;
+
 
 
 
@@ -136,10 +138,12 @@ public class JobPanel extends JPanel {
       if (selectedValue instanceof IRakeJob) {
          IRakeJob job = (IRakeJob) selectedValue;
          openAction.setEnabled(true);
+         showTailAction.setEnabled(true);
          
          job.getState().accept(new IJobStateVisitor() {
             
             private void finished() {
+               showTailAction.setEnabled(false);
                retryAction.setEnabled(false);
                igonreAction.setEnabled(false);
                failAction.setEnabled(false);
@@ -198,6 +202,7 @@ public class JobPanel extends JPanel {
 
    private void disableAll() {
       openAction.setEnabled(false);
+      showTailAction.setEnabled(false);
       retryAction.setEnabled(false);
       igonreAction.setEnabled(false);
       failAction.setEnabled(false);
@@ -221,7 +226,8 @@ public class JobPanel extends JPanel {
       
       openAction = new OpenLogAction();
       toolBar.add(openAction);
-      toolBar.add(new ShowTailAction());
+      showTailAction = new ShowTailAction();
+      toolBar.add(showTailAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
       igonreAction = new IgonreAction();
@@ -275,7 +281,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public ShowTailAction() {
-         super("Open Tail",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
+         super("Open Tail",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenTail.gif")));
          this.putValue(SHORT_DESCRIPTION, "Open Tail Window");
       }
       
