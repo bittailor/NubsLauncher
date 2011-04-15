@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.domain;
+package com.netstal.tools.nubs.launcher.domain.job;
 
 
 import static org.easymock.EasyMock.createControl;
@@ -16,6 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.Provider;
+import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
+import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
+import com.netstal.tools.nubs.launcher.domain.IWorkspace;
+import com.netstal.tools.nubs.launcher.domain.RakeOutputParser;
 import com.netstal.tools.nubs.launcher.domain.job.RakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
@@ -138,7 +143,7 @@ public class RakeJobIntegrationTest {
       lines.remove(0);
       
       return StringUtility.join("\n", lines);
-   }
+   } 
 
    private File expectFile(String filename) throws IOException {
       return new File(this.getClass().getResource(filename).getFile());
