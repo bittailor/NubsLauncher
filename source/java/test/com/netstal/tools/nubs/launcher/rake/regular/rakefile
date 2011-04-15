@@ -79,6 +79,17 @@ end
 task :FailOnce => [:FailOnce_A] 
 
 
+task :LotsOfOutput do 
+  100.times do |n|
+  	n.times do |j| 
+  		$stdout.write j
+    end
+    puts
+  	$stdout.flush
+  	sleep(0.1)
+  end 	
+end
+
 task :ShowVariableBjam do 
   puts ENV["bjam_targets"]
 end

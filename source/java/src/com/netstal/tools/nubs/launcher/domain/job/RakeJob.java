@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.EventSource;
+import com.netstal.tools.nubs.launcher.domain.IEventSource;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
@@ -41,6 +42,8 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    private String currentTask;
    private File logFile;
    private PrintWriter log;
+   private EventSource<String> logEventSource;
+   private boolean isDisposed;
 
    
    
@@ -56,6 +59,8 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       this.launcher = launcher;
       this.state = Idle.INSTANCE;
       this.currentTask = "-";
+      this.logEventSource = new EventSource<String>();
+      this.isDisposed = false;
    }
 
    @Override
@@ -186,11 +191,17 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
          log.flush();
       }
       outputParser.consumeLine(line);
+      logEventSource.notifyEventListeners(line);
    }
    
    @Override
    public boolean isFinished() {
       return state.isFinished();
+   }
+   
+   @Override
+   public boolean isDisposed() {
+      return isDisposed;
    }
 
    @Override
@@ -200,12 +211,21 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
             LOG.log(Level.WARNING, "Could not delete log file of rake job on dispose");
          }
       }
+      isDisposed = true;
+      notifyEventListeners(this);
    }
 
    @Override
    public void relaunch() throws IOException {
       launcher.launch(command);
    }
+
+   @Override
+   public IEventSource<String> getLogEventSource() {
+      return logEventSource;
+   }
+   
+   
    
    
    

@@ -42,6 +42,7 @@ public class JobPanel extends JPanel {
    
    private IRakeJobRepository rakeJobRepository;
    private IWorkspace workspace;
+   private IJobTailFrameFactory jobTailFrameFactory;
    private IConfiguration configuration;
    private JToolBar toolBar;
    private JList jobs;
@@ -62,10 +63,12 @@ public class JobPanel extends JPanel {
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, 
                    IWorkspace workspace, 
-                   IConfiguration configuration) {
+                   IConfiguration configuration,
+                   IJobTailFrameFactory jobTailFrameFactory) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
       this.configuration = configuration;
+      this.jobTailFrameFactory = jobTailFrameFactory;
       createUi();
       createActions();
    }
@@ -218,6 +221,7 @@ public class JobPanel extends JPanel {
       
       openAction = new OpenLogAction();
       toolBar.add(openAction);
+      toolBar.add(new ShowTailAction());
       retryAction = new RetryAction();
       toolBar.add(retryAction);
       igonreAction = new IgonreAction();
@@ -263,6 +267,24 @@ public class JobPanel extends JPanel {
          if (selectedValue instanceof IRakeJob) {
             IRakeJob job = (IRakeJob) selectedValue;
             openLogfile(job);           
+         }
+      }     
+   }
+   
+   private class ShowTailAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public ShowTailAction() {
+         super("Open Tail",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Open Tail Window");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Object selectedValue = jobs.getSelectedValue();
+         if (selectedValue instanceof IRakeJob) {
+            IRakeJob job = (IRakeJob) selectedValue;
+            jobTailFrameFactory.create(job);      
          }
       }     
    }
@@ -371,6 +393,8 @@ public class JobPanel extends JPanel {
          rakeJobRepository.clearFinished();
       }     
    }
+   
+   
    
   
    

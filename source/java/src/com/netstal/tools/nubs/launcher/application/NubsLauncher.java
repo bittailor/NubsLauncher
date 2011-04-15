@@ -40,8 +40,10 @@ import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessBuilderWrapper;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessOutputCapture;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
+import com.netstal.tools.nubs.launcher.ui.IJobTailFrameFactory;
 import com.netstal.tools.nubs.launcher.ui.INotification;
 import com.netstal.tools.nubs.launcher.ui.JobPanel;
+import com.netstal.tools.nubs.launcher.ui.JobTailFrameFactory;
 import com.netstal.tools.nubs.launcher.ui.LauncherPanel;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
@@ -106,6 +108,7 @@ public class NubsLauncher {
             bind(IConfiguration.class).toInstance(configuration);
             bind(RakeTasksField.class).in(Singleton.class); 
             bind(NubsLauncherFrame.class).in(Singleton.class); 
+            bind(IJobTailFrameFactory.class).to(JobTailFrameFactory.class).in(Singleton.class);
             
             if (SystemTray.isSupported()) {
                bind(INotification.class).to(TrayNotification.class).in(Singleton.class);               

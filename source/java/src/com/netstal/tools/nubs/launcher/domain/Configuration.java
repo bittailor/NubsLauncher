@@ -45,6 +45,16 @@ public class Configuration implements IConfiguration {
    public boolean getFlag(String key) {
       return Boolean.parseBoolean(get(key));
    }
+   
+   @Override
+   public int getInteger(String key) {
+      try {
+         return Integer.parseInt(get(key));
+      } 
+      catch (NumberFormatException exception) {
+         throw new ConfigurationException("Key '" + key + "' is not an Integer", exception);
+      }
+   }
 
    private void ensureConfiguration() {
       File configurationDirectory = getConfigurationDirectory();

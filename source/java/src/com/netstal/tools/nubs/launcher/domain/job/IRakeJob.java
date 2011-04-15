@@ -21,6 +21,9 @@ public interface IRakeJob extends IEventSource<IRakeJob> {
    public Command getCommand();
    public File getLogFile();
    public boolean isFinished();
+   public boolean isDisposed();
+   
+   public IEventSource<String> getLogEventSource();
 
    public void retry();
    public void ignore();
