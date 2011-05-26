@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.Command;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
@@ -38,6 +39,7 @@ public class RakeJobIntegrationTest {
    private Provider<IProcessBuilder> processBuilderProvider;
    private RakeJob rakeJob;
    private IRakeLauncher launcher;
+   private IConfiguration configuration;
 
    @SuppressWarnings("unchecked")
    @Before
@@ -62,8 +64,8 @@ public class RakeJobIntegrationTest {
       
       outputParser = new RakeOutputParser();
       launcher = control.createMock("launcher", IRakeLauncher.class);
-      
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher);
+      configuration = control.createMock("configuration", IConfiguration.class);
+      expect(configuration.getInteger("job.TailSize")).andReturn(10).anyTimes();
       
    }
 
@@ -105,6 +107,8 @@ public class RakeJobIntegrationTest {
    public void testJobFail() throws IOException {
       control.replay();
 
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      
       Command command = new Command("FailFast retry=false");
       rakeJob
          .command(command)
@@ -117,6 +121,8 @@ public class RakeJobIntegrationTest {
    
    private void testRakeJob(String taskLine, String expectFileName) throws IOException {
       control.replay();
+      
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
       
       Command command = new Command(taskLine);
       rakeJob

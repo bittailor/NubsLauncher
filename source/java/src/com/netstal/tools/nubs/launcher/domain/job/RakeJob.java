@@ -3,6 +3,8 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,6 +12,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.EventSource;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventSource;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
@@ -25,6 +28,7 @@ import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
 import com.netstal.tools.nubs.launcher.infrastructure.ILineConsumer;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
+import com.netstal.tools.nubs.launcher.infrastructure.RingBuffer;
 import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 
 public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputListener, IRakeJob, ILineConsumer {
@@ -42,7 +46,8 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    private String currentTask;
    private File logFile;
    private PrintWriter log;
-   private EventSource<String> logEventSource;
+   private RingBuffer<String> tailLog;
+   private EventSource<Collection<String>> tailLogEventSource;
    private boolean isDisposed;
 
    
@@ -51,15 +56,17 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public RakeJob(
             Provider<IProcessBuilder> processBuilderProvider, 
             IRakeBuildOutputParser outputParser, 
-            IWorkspace workspace , 
-            IRakeLauncher launcher) {
+            IWorkspace workspace, 
+            IRakeLauncher launcher,
+            IConfiguration configuration) {
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
       this.launcher = launcher;
       this.state = Idle.INSTANCE;
       this.currentTask = "-";
-      this.logEventSource = new EventSource<String>();
+      this.tailLog = new RingBuffer<String>(configuration.getInteger("job.TailSize"));
+      this.tailLogEventSource = new EventSource<Collection<String>>();
       this.isDisposed = false;
    }
 
@@ -191,7 +198,8 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
          log.flush();
       }
       outputParser.consumeLine(line);
-      logEventSource.notifyEventListeners(line);
+      tailLog.add(line);
+      tailLogEventSource.notifyEventListeners(getTailLog());
    }
    
    @Override
@@ -219,12 +227,19 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public void relaunch() throws IOException {
       launcher.launch(command);
    }
-
+   
    @Override
-   public IEventSource<String> getLogEventSource() {
-      return logEventSource;
+   public Collection<String> getTailLog() {
+      return Collections.unmodifiableCollection(tailLog);
    }
    
+
+   @Override
+   public IEventSource<Collection<String>> getTailLogEventSource() {
+      return tailLogEventSource;
+   }
+
+  
    
    
    

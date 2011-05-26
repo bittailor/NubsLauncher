@@ -19,6 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -42,13 +45,12 @@ public class JobPanel extends JPanel {
    
    private IRakeJobRepository rakeJobRepository;
    private IWorkspace workspace;
-   private IJobTailFrameFactory jobTailFrameFactory;
    private IConfiguration configuration;
+   private JobTailPanel jobTailPanel;
    private JToolBar toolBar;
    private JList jobs;
 
    private OpenLogAction openAction;
-   private ShowTailAction showTailAction;
    private RetryAction retryAction;
    private IgonreAction igonreAction;
    private FailAction failAction;
@@ -57,20 +59,13 @@ public class JobPanel extends JPanel {
 
    private RemoveAllFinishedAction removeAllFinishedAction;
 
-
-
-
-
-   
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, 
                    IWorkspace workspace, 
-                   IConfiguration configuration,
-                   IJobTailFrameFactory jobTailFrameFactory) {
+                   IConfiguration configuration) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
       this.configuration = configuration;
-      this.jobTailFrameFactory = jobTailFrameFactory;
       createUi();
       createActions();
    }
@@ -81,6 +76,7 @@ public class JobPanel extends JPanel {
          public void valueChanged(ListSelectionEvent e) {
             jobsChanged();
          }
+
       });
       
       jobs.addMouseListener(new MouseAdapter() {
@@ -94,13 +90,38 @@ public class JobPanel extends JPanel {
          }
       });
       
+      jobs.getModel().addListDataListener(new ListDataListener() {
+         
+         @Override
+         public void intervalRemoved(ListDataEvent e) {
+         }
+         
+         @Override
+         public void intervalAdded(ListDataEvent e) {
+            SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                  if (jobs.getModel().getSize() > 0) {
+                     jobs.setSelectedIndex(0);
+                  }
+               }
+            });
+         }
+         
+         @Override
+         public void contentsChanged(ListDataEvent e) {   
+         }
+      });
+      
       rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob>() {       
          @Override
          public void notifyEvent(final IRakeJob job) {
-            jobsChanged();  
-            if (job.getState().equals(Failed.INSTANCE)) {
-               showRetryGui(job);
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                  jobsChanged();  
+                  if (job.getState().equals(Failed.INSTANCE)) {
+                     showRetryGui(job);
+                  }}
+            });
          }
       });
    }
@@ -128,8 +149,15 @@ public class JobPanel extends JPanel {
       }
    }
 
-   private void jobsChanged() {
+   private void jobsChanged() {   
+      if (jobs.getModel().getSize() == 0) {
+         jobTailPanel.resetJob();
+         disableAll();
+         return;
+      }
+      
       if (jobs.isSelectionEmpty()) {
+         jobTailPanel.resetJob();
          disableAll();
          return;
       }
@@ -137,13 +165,12 @@ public class JobPanel extends JPanel {
       Object selectedValue = jobs.getSelectedValue();
       if (selectedValue instanceof IRakeJob) {
          IRakeJob job = (IRakeJob) selectedValue;
+         jobTailPanel.setJob(job);
          openAction.setEnabled(true);
-         showTailAction.setEnabled(true);
          
          job.getState().accept(new IJobStateVisitor() {
             
             private void finished() {
-               showTailAction.setEnabled(false);
                retryAction.setEnabled(false);
                igonreAction.setEnabled(false);
                failAction.setEnabled(false);
@@ -202,7 +229,6 @@ public class JobPanel extends JPanel {
 
    private void disableAll() {
       openAction.setEnabled(false);
-      showTailAction.setEnabled(false);
       retryAction.setEnabled(false);
       igonreAction.setEnabled(false);
       failAction.setEnabled(false);
@@ -212,22 +238,29 @@ public class JobPanel extends JPanel {
 
    private void createUi() {
       setLayout(new BorderLayout());
-      setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
+      //setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
       jobs = new JList(new JobListModel(rakeJobRepository));
       jobs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       jobs.setCellRenderer(new JobRenderer());
       
+      JPanel scrollPanePanel = new JPanel(new BorderLayout()); 
+      scrollPanePanel.setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
       JScrollPane scrollPane = new JScrollPane(jobs);
-      add(scrollPane);
+      scrollPanePanel.add(scrollPane);
+      add(scrollPanePanel);
 
+      JPanel south = new JPanel(new BorderLayout());
+      add(south, BorderLayout.SOUTH);
+      
+      jobTailPanel = new JobTailPanel(configuration.getInteger("job.TailSize"));
+      south.add(jobTailPanel, BorderLayout.CENTER);
+      
       toolBar = new JToolBar();
       toolBar.setFloatable(false);
-      add(toolBar,BorderLayout.SOUTH);
+      south.add(toolBar, BorderLayout.NORTH);
       
       openAction = new OpenLogAction();
       toolBar.add(openAction);
-      showTailAction = new ShowTailAction();
-      toolBar.add(showTailAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
       igonreAction = new IgonreAction();
@@ -276,25 +309,7 @@ public class JobPanel extends JPanel {
          }
       }     
    }
-   
-   private class ShowTailAction extends AbstractAction {
-      private static final long serialVersionUID = 1L;
-
-      public ShowTailAction() {
-         super("Open Tail",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenTail.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Open Tail Window");
-      }
       
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            jobTailFrameFactory.create(job);      
-         }
-      }     
-   }
-   
    private class RetryAction extends AbstractAction {
       private static final long serialVersionUID = 1L;
 

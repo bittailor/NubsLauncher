@@ -50,6 +50,10 @@ public class TrayNotification implements INotification, IEventListener<IRakeJob>
 
    @Override
    public void notifyEvent(final IRakeJob job) {
+      if (job.isDisposed()) {
+         return;
+      }
+      
       job.getState().accept(new IJobStateVisitor() {
 
          @Override
