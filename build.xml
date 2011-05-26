@@ -64,6 +64,7 @@
 				</outputfilterchain>
 			</redirector>
 		</exec>
+      <echo message="Revision is ${svn.revision}" />
 	</target>
 
 	<target name="clean" description="clean up">
