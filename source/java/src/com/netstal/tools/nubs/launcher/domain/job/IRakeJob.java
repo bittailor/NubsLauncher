@@ -33,7 +33,9 @@ public interface IRakeJob extends IEventSource<IRakeJob> {
 
    public void relaunch() throws IOException;
 
-   
-   
+   public int getMaximumNumberOfAutoRetries();
+   public int getCurrentNumberOfAutoRetries();
+   public void setAutoRetry(boolean autoRetry);
+   public boolean isAutoRetry();
 
 }

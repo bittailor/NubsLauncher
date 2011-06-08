@@ -66,6 +66,7 @@ public class RakeJobIntegrationTest {
       launcher = control.createMock("launcher", IRakeLauncher.class);
       configuration = control.createMock("configuration", IConfiguration.class);
       expect(configuration.getInteger("job.TailSize")).andReturn(10).anyTimes();
+      expect(configuration.getInteger("job.MaximumNumberOfAutoRetries")).andReturn(3).anyTimes();
       
    }
 

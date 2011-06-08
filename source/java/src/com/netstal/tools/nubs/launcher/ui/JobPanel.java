@@ -51,6 +51,7 @@ public class JobPanel extends JPanel {
    private JList jobs;
 
    private OpenLogAction openAction;
+   private ToggleAutoRetryAction toggleAutoRetryAction;
    private RetryAction retryAction;
    private IgonreAction igonreAction;
    private FailAction failAction;
@@ -167,6 +168,7 @@ public class JobPanel extends JPanel {
          IRakeJob job = (IRakeJob) selectedValue;
          jobTailPanel.setJob(job);
          openAction.setEnabled(true);
+         toggleAutoRetryAction.setEnabled(true);
          
          job.getState().accept(new IJobStateVisitor() {
             
@@ -229,6 +231,7 @@ public class JobPanel extends JPanel {
 
    private void disableAll() {
       openAction.setEnabled(false);
+      toggleAutoRetryAction.setEnabled(false);
       retryAction.setEnabled(false);
       igonreAction.setEnabled(false);
       failAction.setEnabled(false);
@@ -261,6 +264,8 @@ public class JobPanel extends JPanel {
       
       openAction = new OpenLogAction();
       toolBar.add(openAction);
+      toggleAutoRetryAction = new ToggleAutoRetryAction();
+      toolBar.add(toggleAutoRetryAction);
       retryAction = new RetryAction();
       toolBar.add(retryAction);
       igonreAction = new IgonreAction();
@@ -397,6 +402,24 @@ public class JobPanel extends JPanel {
             catch (IOException exception) {
                LOG.log(Level.SEVERE, "Problem Relaunching Job", exception);
             }          
+         }
+      }     
+   }
+   
+   private class ToggleAutoRetryAction extends AbstractAction {
+      private static final long serialVersionUID = 1L;
+
+      public ToggleAutoRetryAction() {
+         super("Toggle Auto Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/AutoRetry.gif")));
+         this.putValue(SHORT_DESCRIPTION, "Toggle Auto Retry");
+      }
+      
+      @Override
+      public void actionPerformed(ActionEvent e) {
+         Object selectedValue = jobs.getSelectedValue();
+         if (selectedValue instanceof IRakeJob) {
+            IRakeJob job = (IRakeJob) selectedValue;
+            job.setAutoRetry(!job.isAutoRetry());         
          }
       }     
    }

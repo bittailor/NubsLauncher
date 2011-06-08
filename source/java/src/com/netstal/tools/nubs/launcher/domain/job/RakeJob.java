@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +43,9 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    private IProcess process;
    private IRakeBuildOutputParser outputParser;
    private IRakeLauncher launcher;
-   private boolean retry;
+   private boolean autoRetry;
+   private AtomicInteger currentNumberOfAutoRetries;
+   final private int maximumNumberOfAutoRetries;
    private String currentTask;
    private File logFile;
    private PrintWriter log;
@@ -63,6 +66,9 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       this.workspace = workspace;
       this.outputParser = outputParser;
       this.launcher = launcher;
+      this.autoRetry = false;
+      this.currentNumberOfAutoRetries = new AtomicInteger();
+      this.maximumNumberOfAutoRetries = configuration.getInteger("job.MaximumNumberOfAutoRetries");
       this.state = Idle.INSTANCE;
       this.currentTask = "-";
       this.tailLog = new RingBuffer<String>(configuration.getInteger("job.TailSize"));
@@ -141,6 +147,11 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    
    @Override
    public void retry() {
+      currentNumberOfAutoRetries.set(0);
+      sendRetry();   
+   }
+   
+   public void sendRetry() {
       if(isFinished()) {
          return;
       }
@@ -173,16 +184,33 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
 
    @Override
    public void notifyTaskFailed(String taskName) {
-      if(retry) {
-         retry();
-      } else {
+      if(!autoRetry()) {
          setState(Failed.INSTANCE);   
       }
    }
    
+   private boolean autoRetry() {
+      if (!autoRetry) {
+         return false;
+      }
+       
+      if (currentNumberOfAutoRetries.incrementAndGet() > maximumNumberOfAutoRetries ) {
+         return false;
+      }
+      
+      notifyEventListeners(this);
+      sendRetry();
+      return true;
+   }
+
    @Override
    public void notifyExecuteTask(String taskName) {
+      if (currentTask.equals(taskName)) {
+         return;
+      }
+      
       currentTask = taskName;
+      currentNumberOfAutoRetries.set(0);
       notifyEventListeners(this);
    }
 
@@ -210,6 +238,31 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    @Override
    public boolean isDisposed() {
       return isDisposed;
+   }
+   
+   @Override
+   public boolean isAutoRetry() {
+      return autoRetry;
+   }
+
+   @Override
+   public void setAutoRetry(boolean autoRetry) {
+      this.autoRetry = autoRetry;
+      currentNumberOfAutoRetries.set(0);
+      notifyEventListeners(this);
+   }
+
+   @Override
+   public int getCurrentNumberOfAutoRetries() {
+      return currentNumberOfAutoRetries.get();
+   }
+
+   @Override
+   public int getMaximumNumberOfAutoRetries() {
+      if(autoRetry) {
+         return maximumNumberOfAutoRetries;
+      }
+      return 0;
    }
 
    @Override

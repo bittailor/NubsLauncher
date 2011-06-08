@@ -62,6 +62,21 @@ task :TimeTwo => [:TimeOne]  do
 	useTime()
 end
 
+task :Time3 => [:TimeTwo]  do
+    useTime()
+    useTime()
+end
+
+task :Time4 => [:Time3]  do
+    useTime()
+    useTime()
+end
+
+task :Time5 => [:Time4]  do
+    useTime()
+    useTime()
+end
+
 task :Time => [:TimeTwo]  do
     useTime()
 end
@@ -73,6 +88,15 @@ task :FailOnce_A => [:TimeTwo] do
 	if(failOnce_A_guard)		
 		failOnce_A_guard = false
 		fail("FailOnce")
+	end			
+end 
+
+failTwice_guard = 0
+task :FailTwice => [:Time5] do
+	useTime()
+	if(failTwice_guard < 2)		
+		failTwice_guard = failTwice_guard + 1 
+		fail("FailTwice")
 	end			
 end 
 

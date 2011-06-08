@@ -17,6 +17,7 @@ public class JobRenderer extends JPanel implements ListCellRenderer {
    private JLabel command;
    private JLabel state;
    private JLabel currentTask;
+   private JLabel retry;
    
    public JobRenderer() {
       this.setLayout(new GridLayout(1, 0));
@@ -29,6 +30,9 @@ public class JobRenderer extends JPanel implements ListCellRenderer {
       
       currentTask = new JLabel();
       add(currentTask);
+      
+      retry = new JLabel();
+      add(retry);
    }
    
    
@@ -53,6 +57,11 @@ public class JobRenderer extends JPanel implements ListCellRenderer {
       command.setText(commandString);
       state.setText(job.getState().accept(new DisplayNameJobStateVisitor()).getName());
       currentTask.setText(job.getCurrentTask());
+      if (job.isAutoRetry()) {
+         retry.setText("Auto-Retry " + job.getCurrentNumberOfAutoRetries() + " of " + job.getMaximumNumberOfAutoRetries());
+      } else {
+         retry.setText("Auto-Retry is off");
+      }
       
       return this;
    }
