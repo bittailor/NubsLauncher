@@ -136,7 +136,7 @@ public class RakeJobTest {
             IRakeBuildOutputListener listener = outputListener.getValue();
             listener.notifyExecuteTask("RetryTask");
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\n", outputBuffer.toString()); 
+            assertEquals(getRetryString(1), outputBuffer.toString()); 
             assertEquals(Building.INSTANCE, rakeJob.getState());
             return 0;
          }
@@ -165,15 +165,15 @@ public class RakeJobTest {
             listener.notifyExecuteTask("RetryTask");
             assertEquals(0, rakeJob.getCurrentNumberOfAutoRetries());
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\n", outputBuffer.toString());
+            assertEquals(getRetryString(1), outputBuffer.toString());
             assertEquals(Building.INSTANCE, rakeJob.getState());
             assertEquals(1, rakeJob.getCurrentNumberOfAutoRetries());
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\n", outputBuffer.toString()); 
+            assertEquals(getRetryString(2), outputBuffer.toString()); 
             assertEquals(Building.INSTANCE, rakeJob.getState());
             assertEquals(2, rakeJob.getCurrentNumberOfAutoRetries());
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\ny\n", outputBuffer.toString()); 
+            assertEquals(getRetryString(3), outputBuffer.toString()); 
             assertEquals(Building.INSTANCE, rakeJob.getState());
             assertEquals(3, rakeJob.getCurrentNumberOfAutoRetries());
             return 0;
@@ -201,13 +201,13 @@ public class RakeJobTest {
             IRakeBuildOutputListener listener = outputListener.getValue();
             listener.notifyExecuteTask("RetryTask");
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\n", outputBuffer.toString());           
+            assertEquals(getRetryString(1), outputBuffer.toString());           
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\n", outputBuffer.toString());           
+            assertEquals(getRetryString(2), outputBuffer.toString());           
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\ny\n", outputBuffer.toString());
+            assertEquals(getRetryString(3), outputBuffer.toString());
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\ny\n", outputBuffer.toString());
+            assertEquals(getRetryString(3), outputBuffer.toString());
             assertEquals(Failed.INSTANCE, rakeJob.getState());
             return 0;
          }
@@ -234,16 +234,16 @@ public class RakeJobTest {
             IRakeBuildOutputListener listener = outputListener.getValue();
             listener.notifyExecuteTask("RetryTask");
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\n", outputBuffer.toString());           
+            assertEquals(getRetryString(1), outputBuffer.toString());           
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\n", outputBuffer.toString());           
+            assertEquals(getRetryString(2), outputBuffer.toString());           
             listener.notifyTaskFailed("RetryTask");
-            assertEquals("y\ny\ny\n", outputBuffer.toString());
+            assertEquals(getRetryString(3), outputBuffer.toString());
             assertEquals(3, rakeJob.getCurrentNumberOfAutoRetries());
             listener.notifyExecuteTask("NewTask");
             assertEquals(0, rakeJob.getCurrentNumberOfAutoRetries());
             listener.notifyTaskFailed("NewTask");
-            assertEquals("y\ny\ny\ny\n", outputBuffer.toString());
+            assertEquals(getRetryString(4), outputBuffer.toString());
             assertEquals(Building.INSTANCE, rakeJob.getState());
             return 0;
          }
@@ -260,6 +260,15 @@ public class RakeJobTest {
       
    }
 
+   private String getRetryString(int numberOfRetries) {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      PrintStream stream = new PrintStream(buffer);
+      for (int i = 0; i < numberOfRetries; i++) {
+         stream.println("y");
+      }
+      StreamUtility.close(stream);
+      return buffer.toString();
+   }
    
 
 }
