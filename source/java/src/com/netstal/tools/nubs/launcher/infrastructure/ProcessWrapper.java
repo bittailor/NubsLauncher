@@ -6,6 +6,7 @@ import java.io.PrintStream;
 
 public class ProcessWrapper implements IProcess {
 
+   private static final int MAX_WAIT_FOR_STREAM = 1000;
    private ILineConsumer outputConsumer;
    private ThreadWrapper outputThread;
    private ILineConsumer errorConsumer;
@@ -33,6 +34,7 @@ public class ProcessWrapper implements IProcess {
       launch(processBuilder);
    }
    
+   @Override
    public OutputStream getOutputStream() {
       return process.getOutputStream();
    }
@@ -40,14 +42,14 @@ public class ProcessWrapper implements IProcess {
    @Override
    public int waitFor() throws InterruptedException {
       int exit = process.waitFor();
-      outputThread.join();
+      outputThread.join(MAX_WAIT_FOR_STREAM);
       if (errorThread != null) {
-         errorThread.join();
+         errorThread.join(MAX_WAIT_FOR_STREAM);
       }
       out.close();
       return exit;
    }
-   
+    
    @Override
    public int exitValue() {
       return process.exitValue();
@@ -61,9 +63,11 @@ public class ProcessWrapper implements IProcess {
    private void launch(ProcessBuilder processBuilder) throws IOException {
       process = processBuilder.start();
       outputThread = new ThreadWrapper(new StreamPumper(process.getInputStream(), outputConsumer),"OutputPumper");
+      outputThread.getWrappedThread().setDaemon(true);
       outputThread.start();
       if (errorConsumer != null) {
          errorThread = new ThreadWrapper(new StreamPumper(process.getErrorStream(), errorConsumer),"ErrorPumper");
+         errorThread.getWrappedThread().setDaemon(true);
          errorThread.start();
       }
       out = new PrintStream(process.getOutputStream());

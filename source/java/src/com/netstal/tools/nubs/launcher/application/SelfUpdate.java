@@ -12,9 +12,7 @@ import javax.swing.JOptionPane;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
-import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
-import com.netstal.tools.nubs.launcher.infrastructure.ProcessOutputCapture;
-import com.netstal.tools.nubs.launcher.infrastructure.Version;
+import com.netstal.tools.nubs.launcher.infrastructure.*;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 
 public class SelfUpdate {
@@ -117,12 +115,16 @@ public class SelfUpdate {
 
    private boolean launchSelfUpdate() {
       try {
-         processBuilderProvider.get()
+         IProcess process = processBuilderProvider.get()
             .command("cmd","/C","start","cmd","/C","ruby.exe " + new File(getServerDirectory(),"install.rb").getAbsolutePath(),"-u")
             .start();
+         process.waitFor();
          return true;
       }
       catch (IOException exception) {
+         LOG.log(Level.SEVERE, "Failed To Launch Self Update", exception);
+      }
+      catch (InterruptedException exception) {
          LOG.log(Level.SEVERE, "Failed To Launch Self Update", exception);
       }
       return false;

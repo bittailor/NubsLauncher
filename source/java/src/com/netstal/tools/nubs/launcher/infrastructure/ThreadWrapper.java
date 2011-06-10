@@ -30,14 +30,18 @@ public class ThreadWrapper {
          }
       },name);
    }
-   
+      
    public void start() {
       thread.start();
    }
 
 
    public void join() throws InterruptedException  {
-      thread.join();
+      join(0);
+   }
+   
+   public void join(long millis) throws InterruptedException  {
+      thread.join(millis);
       RuntimeException runtimeException = runtimeExceptionReference.get();
       if (runtimeException != null) {
          throw runtimeException;
@@ -47,5 +51,11 @@ public class ThreadWrapper {
          throw error;
       }
    }
+
+   public Thread getWrappedThread() {
+      return thread;
+   }
+   
+   
 
 }
