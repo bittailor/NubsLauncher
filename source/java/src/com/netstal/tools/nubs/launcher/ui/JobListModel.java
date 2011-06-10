@@ -23,9 +23,9 @@ public class JobListModel extends AbstractListModel {
             oldSize = getSize(); 
          }
       });
-      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob>() {     
+      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob.Event>() {     
          @Override
-         public void notifyEvent(final IRakeJob job) {
+         public void notifyEvent(final IRakeJob.Event event) {
             fireContentsChanged(JobListModel.this, 0, getSize());                               
          }
       });

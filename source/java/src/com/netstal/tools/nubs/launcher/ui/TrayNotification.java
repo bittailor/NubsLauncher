@@ -21,7 +21,7 @@ import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
 import com.netstal.tools.nubs.launcher.domain.job.state.IJobStateVisitor;
 import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
 
-public class TrayNotification implements INotification, IEventListener<IRakeJob>  {
+public class TrayNotification implements INotification, IEventListener<IRakeJob.Event>  {
 
    private static Logger LOG = Logger.getLogger(TrayNotification.class.getName());
    private TrayIcon trayIcon;
@@ -49,12 +49,16 @@ public class TrayNotification implements INotification, IEventListener<IRakeJob>
    }
 
    @Override
-   public void notifyEvent(final IRakeJob job) {
-      if (job.isDisposed()) {
+   public void notifyEvent(final IRakeJob.Event event) {
+      if (!event.stateChanged) {
+         return;
+      }
+            
+      if (event.job.isDisposed()) {
          return;
       }
       
-      job.getState().accept(new IJobStateVisitor() {
+      event.job.getState().accept(new IJobStateVisitor() {
 
          @Override
          public void visit(FinishedExceptionally state) {
@@ -73,7 +77,7 @@ public class TrayNotification implements INotification, IEventListener<IRakeJob>
 
          @Override
          public void visit(Failed state) {
-            trayIcon.displayMessage("NUBS", "Build failed at task " + job.getCurrentTask(), TrayIcon.MessageType.ERROR);
+            trayIcon.displayMessage("NUBS", "Build failed at task " + event.job.getCurrentTask(), TrayIcon.MessageType.ERROR);
          }
 
          @Override

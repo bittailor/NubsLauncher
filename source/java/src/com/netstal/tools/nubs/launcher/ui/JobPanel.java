@@ -113,14 +113,14 @@ public class JobPanel extends JPanel {
          }
       });
       
-      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob>() {       
+      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob.Event>() {       
          @Override
-         public void notifyEvent(final IRakeJob job) {
+         public void notifyEvent(final IRakeJob.Event event) {
             SwingUtilities.invokeLater(new Runnable() {
                public void run() {
                   jobsChanged();  
-                  if (job.getState().equals(Failed.INSTANCE)) {
-                     showRetryGui(job);
+                  if (event.stateChanged && event.job.getState().equals(Failed.INSTANCE)) {
+                     showRetryGui(event.job);
                   }}
             });
          }

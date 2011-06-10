@@ -10,7 +10,20 @@ import com.netstal.tools.nubs.launcher.domain.IEventSource;
 import com.netstal.tools.nubs.launcher.domain.job.state.IJobState;
 
 
-public interface IRakeJob extends IEventSource<IRakeJob> {
+public interface IRakeJob extends IEventSource<IRakeJob.Event> {
+   
+   static class Event {
+         
+      public final IRakeJob job;
+         public final boolean stateChanged;
+         
+         public Event(IRakeJob job, boolean stateChanged) {
+            super();
+            this.job = job;
+            this.stateChanged = stateChanged;
+         }
+         
+   }
    
    public IRakeJob command(Command command);
 

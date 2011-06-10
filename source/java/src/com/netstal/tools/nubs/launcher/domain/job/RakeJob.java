@@ -32,7 +32,7 @@ import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.RingBuffer;
 import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 
-public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputListener, IRakeJob, ILineConsumer {
+public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOutputListener, IRakeJob, ILineConsumer {
 
    private static Logger LOG = Logger.getLogger(RakeJob.class.getName());
    
@@ -142,9 +142,9 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
 
    private void setState(IJobState newState) {
       state = newState; 
-      notifyEventListeners(this);
+      notifyEventListeners(stateChangeEvent());
    }
-   
+
    @Override
    public void retry() {
       currentNumberOfAutoRetries.set(0);
@@ -198,10 +198,12 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
          return false;
       }
       
-      notifyEventListeners(this);
+      notifyEventListeners(event());
       sendRetry();
       return true;
    }
+
+   
 
    @Override
    public void notifyExecuteTask(String taskName) {
@@ -211,7 +213,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       
       currentTask = taskName;
       currentNumberOfAutoRetries.set(0);
-      notifyEventListeners(this);
+      notifyEventListeners(event());
    }
 
    @Override
@@ -249,7 +251,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
    public void setAutoRetry(boolean autoRetry) {
       this.autoRetry = autoRetry;
       currentNumberOfAutoRetries.set(0);
-      notifyEventListeners(this);
+      notifyEventListeners(event());
    }
 
    @Override
@@ -273,7 +275,7 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
          }
       }
       isDisposed = true;
-      notifyEventListeners(this);
+      notifyEventListeners(event());
    }
 
    @Override
@@ -292,6 +294,14 @@ public class RakeJob extends EventSource<IRakeJob> implements IRakeBuildOutputLi
       return tailLogEventSource;
    }
 
+   private Event event() {
+      return new Event(this, false);
+   }
+   
+   private Event stateChangeEvent() {
+      return new Event(this,true);
+   }
+   
   
    
    

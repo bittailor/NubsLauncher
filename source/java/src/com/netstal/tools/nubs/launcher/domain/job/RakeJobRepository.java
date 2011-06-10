@@ -8,14 +8,14 @@ import com.netstal.tools.nubs.launcher.domain.EventSource;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IEventSource;
 
-public class RakeJobRepository extends EventSource<IRakeJobRepository> implements IRakeJobRepository, IEventListener<IRakeJob> {
+public class RakeJobRepository extends EventSource<IRakeJobRepository> implements IRakeJobRepository, IEventListener<IRakeJob.Event> {
 
    private List<IRakeJob> jobs;
-   private EventSource<IRakeJob> jobsEventSource;
+   private EventSource<IRakeJob.Event> jobsEventSource;
    
    public RakeJobRepository() {
       jobs = new LinkedList<IRakeJob>();
-      jobsEventSource = new EventSource<IRakeJob>();
+      jobsEventSource = new EventSource<IRakeJob.Event>();
    }
 
    @Override
@@ -50,12 +50,12 @@ public class RakeJobRepository extends EventSource<IRakeJobRepository> implement
    }
 
    @Override
-   public IEventSource<IRakeJob> getJobsEventSource() {
+   public IEventSource<IRakeJob.Event> getJobsEventSource() {
       return jobsEventSource;
    }
 
    @Override
-   public void notifyEvent(IRakeJob source) {
+   public void notifyEvent(IRakeJob.Event source) {
       jobsEventSource.notifyEventListeners(source);    
    }
 
