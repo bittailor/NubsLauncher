@@ -319,7 +319,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public RetryAction() {
-         super("Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/Retry.gif")));
+         super("Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/RetryFw.png")));
          this.putValue(SHORT_DESCRIPTION, "Retry The Failed Task");
       }
       
@@ -337,8 +337,8 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public IgonreAction() {
-         super("Ignore",new ImageIcon(NubsLauncherFrame.class.getResource("images/Ignore.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Ignore The Failed Task");
+         super("Ignore",new ImageIcon(NubsLauncherFrame.class.getResource("images/IgnoreFw.png")));
+         this.putValue(SHORT_DESCRIPTION, "Ignore The Failed Task And Continue");
       }
       
       @Override
@@ -355,8 +355,8 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public FailAction() {
-         super("Fail",new ImageIcon(NubsLauncherFrame.class.getResource("images/Fail.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Fail The Failed Task");
+         super("Fail",new ImageIcon(NubsLauncherFrame.class.getResource("images/FailFw.png")));
+         this.putValue(SHORT_DESCRIPTION, "Quit The Job");
       }
       
       @Override
@@ -387,7 +387,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public RelaunchAction() {
-         super("Launch This Job Again",new ImageIcon(NubsLauncherFrame.class.getResource("images/Launch.png")));
+         super("Relaunch",new ImageIcon(NubsLauncherFrame.class.getResource("images/Launch.png")));
          this.putValue(SHORT_DESCRIPTION, "Launch This Job Again");
       }
       
@@ -410,7 +410,7 @@ public class JobPanel extends JPanel {
       private static final long serialVersionUID = 1L;
 
       public ToggleAutoRetryAction() {
-         super("Toggle Auto Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/AutoRetry.gif")));
+         super("AutoRetry",new ImageIcon(NubsLauncherFrame.class.getResource("images/AutoRetryFw.png")));
          this.putValue(SHORT_DESCRIPTION, "Toggle Auto Retry");
       }
       
