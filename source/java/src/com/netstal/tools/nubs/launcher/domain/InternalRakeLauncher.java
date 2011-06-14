@@ -20,25 +20,33 @@ public class InternalRakeLauncher implements IRakeLauncher {
       this.repository = repository;
    }
 
-
-
    @Override
    public void launch(final Command command) {
       commandHistory.push(command);
-      SwingWorker<Void,Void> worker = new SwingWorker<Void, Void>() {
+      IRakeJob rakeJob = rakeJobProvider.get();
+      rakeJob.command(command);
+      launch(rakeJob);
+   }
 
+   @Override
+   public void relaunch(IRakeJob job) {
+      IRakeJob newJob = rakeJobProvider.get();
+      newJob.command(job.getCommand());
+      newJob.setAutoRetry(job.isAutoRetry());
+      launch(newJob);
+   }
+   
+   private void launch(final IRakeJob rakeJob) {    
+      SwingWorker<Void,Void> worker = new SwingWorker<Void, Void>() {
          @Override
          protected Void doInBackground() throws Exception {
-            IRakeJob rakeJob = rakeJobProvider.get();
-            rakeJob.command(command);
+            
             repository.add(rakeJob);
             rakeJob.launch();
             return null;
          }
-
       };
       worker.execute();
-      
    }
-
+   
 }

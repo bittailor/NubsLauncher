@@ -21,6 +21,7 @@ public class EventSource<Source> implements IEventSource<Source> {
       listeners.add(listener);
    }
    
+   @Override
    public void addListenerNotifyInSwingDispatchThread(IEventListener<Source> listener) {
       swingListeners.add(listener);
    }

@@ -137,6 +137,7 @@ public class RingBuffer<E> implements Collection<E> {
    }
    
    private class Filling implements Strategie {
+      @Override
       public void add(Object object) {
          buffer[end] = object;
          end = nextLocation(end);
@@ -145,6 +146,7 @@ public class RingBuffer<E> implements Collection<E> {
          }
       }
       
+      @Override
       public int size() {
          return end - begin;
       }
@@ -153,12 +155,14 @@ public class RingBuffer<E> implements Collection<E> {
    
    private class Overriding implements Strategie{
       
+      @Override
       public void add(Object object) {
          buffer[end] = object;
          end = nextLocation(end);
          begin = nextLocation(begin);
       }
       
+      @Override
       public int size() {
          return buffer.length;
       }

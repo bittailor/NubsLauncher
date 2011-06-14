@@ -19,10 +19,8 @@ import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
-import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.RakeOutputParser;
-import com.netstal.tools.nubs.launcher.domain.job.RakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
@@ -38,7 +36,6 @@ public class RakeJobIntegrationTest {
    private IRakeBuildOutputParser outputParser;
    private Provider<IProcessBuilder> processBuilderProvider;
    private RakeJob rakeJob;
-   private IRakeLauncher launcher;
    private IConfiguration configuration;
 
    @SuppressWarnings("unchecked")
@@ -63,7 +60,6 @@ public class RakeJobIntegrationTest {
          .anyTimes();
       
       outputParser = new RakeOutputParser();
-      launcher = control.createMock("launcher", IRakeLauncher.class);
       configuration = control.createMock("configuration", IConfiguration.class);
       expect(configuration.getInteger("job.TailSize")).andReturn(10).anyTimes();
       expect(configuration.getInteger("job.MaximumNumberOfAutoRetries")).andReturn(3).anyTimes();
@@ -108,7 +104,7 @@ public class RakeJobIntegrationTest {
    public void testJobFail() throws IOException {
       control.replay();
 
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       
       Command command = new Command("FailFast retry=false");
       rakeJob
@@ -123,7 +119,7 @@ public class RakeJobIntegrationTest {
    private void testRakeJob(String taskLine, String expectFileName) throws IOException {
       control.replay();
       
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       
       Command command = new Command(taskLine);
       rakeJob

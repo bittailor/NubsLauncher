@@ -5,7 +5,7 @@ import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.createControl;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,7 +23,6 @@ import com.netstal.tools.nubs.launcher.domain.Command;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
-import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.job.state.Building;
 import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
@@ -40,7 +39,6 @@ public class RakeJobTest {
    private Provider<IProcessBuilder> processBuilderProvider;
    private IRakeBuildOutputParser outputParser;
    private IWorkspace workspace;
-   private IRakeLauncher launcher;
    private IConfiguration configuration;
    private IProcessBuilder processBuilder;
    private RakeJob rakeJob;
@@ -61,7 +59,6 @@ public class RakeJobTest {
       
       outputParser = control.createMock("outputParser", IRakeBuildOutputParser.class);
       workspace = control.createMock("workspace", IWorkspace.class);
-      launcher = control.createMock("launcher", IRakeLauncher.class);
       configuration = control.createMock("configuration", IConfiguration.class);
       processBuilder = control.createMock("processBuilder", IProcessBuilder.class);
       process = control.createMock("process", IProcess.class);
@@ -116,7 +113,7 @@ public class RakeJobTest {
       
       control.replay();
       Command command = new Command(COMMAND);
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.setAutoRetry(false);
       assertEquals(0, rakeJob.getMaximumNumberOfAutoRetries());
 
@@ -144,7 +141,7 @@ public class RakeJobTest {
       
       control.replay();
       Command command = new Command(COMMAND);
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.setAutoRetry(true);
       assertEquals(MAX_NUMBER_OF_RETRIES, rakeJob.getMaximumNumberOfAutoRetries());
 
@@ -182,7 +179,7 @@ public class RakeJobTest {
       
       control.replay();
       Command command = new Command(COMMAND);
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.setAutoRetry(true);
 
       rakeJob.command(command).launch();
@@ -215,7 +212,7 @@ public class RakeJobTest {
       
       control.replay();
       Command command = new Command(COMMAND);
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.setAutoRetry(true);
 
       rakeJob.command(command).launch();
@@ -251,7 +248,7 @@ public class RakeJobTest {
       
       control.replay();
       Command command = new Command(COMMAND);
-      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, launcher, configuration);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.setAutoRetry(true);
 
       rakeJob.command(command).launch();

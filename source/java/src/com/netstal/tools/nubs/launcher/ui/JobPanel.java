@@ -5,7 +5,6 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +27,7 @@ import javax.swing.event.ListSelectionListener;
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
+import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
@@ -45,6 +45,7 @@ public class JobPanel extends JPanel {
    
    private IRakeJobRepository rakeJobRepository;
    private IWorkspace workspace;
+   private IRakeLauncher launcher;
    private IConfiguration configuration;
    private JobTailPanel jobTailPanel;
    private JToolBar toolBar;
@@ -60,12 +61,15 @@ public class JobPanel extends JPanel {
 
    private RemoveAllFinishedAction removeAllFinishedAction;
 
+
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, 
                    IWorkspace workspace, 
+                   IRakeLauncher launcher,
                    IConfiguration configuration) {
       this.rakeJobRepository = rakeJobRepository;
       this.workspace = workspace;
+      this.launcher = launcher;
       this.configuration = configuration;
       createUi();
       createActions();
@@ -100,6 +104,7 @@ public class JobPanel extends JPanel {
          @Override
          public void intervalAdded(ListDataEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
+               @Override
                public void run() {
                   if (jobs.getModel().getSize() > 0) {
                      jobs.setSelectedIndex(0);
@@ -117,6 +122,7 @@ public class JobPanel extends JPanel {
          @Override
          public void notifyEvent(final IRakeJob.Event event) {
             SwingUtilities.invokeLater(new Runnable() {
+               @Override
                public void run() {
                   jobsChanged();  
                   if (event.stateChanged && event.job.getState().equals(Failed.INSTANCE)) {
@@ -396,12 +402,8 @@ public class JobPanel extends JPanel {
          Object selectedValue = jobs.getSelectedValue();
          if (selectedValue instanceof IRakeJob) {
             IRakeJob job = (IRakeJob) selectedValue;
-            try {
-               job.relaunch();
-            }
-            catch (IOException exception) {
-               LOG.log(Level.SEVERE, "Problem Relaunching Job", exception);
-            }          
+            launcher.relaunch(job);
+                      
          }
       }     
    }

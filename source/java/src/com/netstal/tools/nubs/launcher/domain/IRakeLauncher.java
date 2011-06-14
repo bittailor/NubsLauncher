@@ -6,15 +6,14 @@
 
 package com.netstal.tools.nubs.launcher.domain;
 
-import java.io.IOException;
+import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 
 
 
-/**
- * 
- */
+
 public interface IRakeLauncher {
 
-   public abstract void launch(Command command) throws IOException;
+   public void launch(Command command);
+   public void relaunch(IRakeJob job);
 
 }

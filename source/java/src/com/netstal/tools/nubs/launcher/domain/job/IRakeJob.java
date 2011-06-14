@@ -2,7 +2,6 @@
 package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 import com.netstal.tools.nubs.launcher.domain.Command;
@@ -44,11 +43,10 @@ public interface IRakeJob extends IEventSource<IRakeJob.Event> {
    public void ignore();
    public void fail();
 
-   public void relaunch() throws IOException;
-
    public int getMaximumNumberOfAutoRetries();
    public int getCurrentNumberOfAutoRetries();
    public void setAutoRetry(boolean autoRetry);
    public boolean isAutoRetry();
+
 
 }

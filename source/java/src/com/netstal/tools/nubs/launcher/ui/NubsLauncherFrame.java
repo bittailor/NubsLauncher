@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -183,13 +182,8 @@ public class NubsLauncherFrame extends JFrame {
       @Override
       public void actionPerformed(ActionEvent event) {
          LOG.log(Level.INFO, "Lauch Rake with " + suggestField.getTextField().getText());
-         try {
-            Command command = new Command(suggestField.getTextField().getText());
-            launcher.launch(command);
-         }
-         catch (IOException exception) {
-            LOG.log(Level.SEVERE, "Problem Launching Rake", exception);
-         }
+         Command command = new Command(suggestField.getTextField().getText());
+         launcher.launch(command);
       }     
    }
    

@@ -17,7 +17,6 @@ import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventSource;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeBuildOutputParser;
-import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.job.state.Building;
 import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
@@ -42,7 +41,6 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    private Command command;
    private IProcess process;
    private IRakeBuildOutputParser outputParser;
-   private IRakeLauncher launcher;
    private boolean autoRetry;
    private AtomicInteger currentNumberOfAutoRetries;
    final private int maximumNumberOfAutoRetries;
@@ -60,12 +58,10 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
             Provider<IProcessBuilder> processBuilderProvider, 
             IRakeBuildOutputParser outputParser, 
             IWorkspace workspace, 
-            IRakeLauncher launcher,
             IConfiguration configuration) {
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
-      this.launcher = launcher;
       this.autoRetry = false;
       this.currentNumberOfAutoRetries = new AtomicInteger();
       this.maximumNumberOfAutoRetries = configuration.getInteger("job.MaximumNumberOfAutoRetries");
@@ -277,12 +273,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       isDisposed = true;
       notifyEventListeners(event());
    }
-
-   @Override
-   public void relaunch() throws IOException {
-      launcher.launch(command);
-   }
-   
+ 
    @Override
    public Collection<String> getTailLog() {
       return Collections.unmodifiableCollection(tailLog);
@@ -301,6 +292,8 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    private Event stateChangeEvent() {
       return new Event(this,true);
    }
+
+   
    
   
    
