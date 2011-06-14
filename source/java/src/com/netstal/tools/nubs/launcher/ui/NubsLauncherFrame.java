@@ -62,7 +62,7 @@ public class NubsLauncherFrame extends JFrame {
    public NubsLauncherFrame(IWorkspace workspace, 
             RakeTasksField rakeTasksField, 
             IRakeLauncher launcher,
-            @LauncherPanel JComponent launcherPanel) {
+            JobPanel launcherPanel) {
       super(PREFIX);
       this.workspace = workspace;
       this.launcher = launcher;

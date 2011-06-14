@@ -9,18 +9,26 @@ package com.netstal.tools.nubs.launcher.domain;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.google.inject.Inject;
+
 public class CommandHistory implements ICommandHistory {
 
-   // TODO - fsc - preferences - get history size from preferences.
-   public static final int MAXIMAL_SIZE = 20;
+   public static final String KEY_MAX_SIZE = "commandHistory.MaxSize";
    
-   private LinkedList<Command> history = new LinkedList<Command>();
-   
+   private final int maxSize;
+   private LinkedList<Command> history;
+     
+   @Inject
+   public CommandHistory(IConfiguration configuration) {
+      maxSize = configuration.getInteger(KEY_MAX_SIZE);
+      history = new LinkedList<Command>();
+   }
+
    @Override
    public void push(Command command) {
       history.remove(command);
       history.addFirst(command);
-      if (history.size() > MAXIMAL_SIZE) {
+      if (history.size() > maxSize) {
          history.removeLast();
       }
    }

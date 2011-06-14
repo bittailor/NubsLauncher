@@ -8,11 +8,10 @@ package com.netstal.tools.nubs.launcher.domain;
 
 import java.util.ArrayList;
 
+import com.netstal.tools.nubs.launcher.infrastructure.OsPlatform;
+
 
 public class Command {
-    
-   // TODO fsc fix !
-   public static final String RAKE = isWindows() ? "rake.bat" : "rake";
    
    private final String command;
 
@@ -31,7 +30,7 @@ public class Command {
       String[] fragments = command.trim().split(" ");
 
       ArrayList<String> arguments = new ArrayList<String>(fragments.length);
-      arguments.add(RAKE);
+      arguments.add(OsPlatform.getRakeOsCommand());
 
       StringBuilder buffer = new StringBuilder();
       for (String fragment : fragments) {
@@ -73,7 +72,7 @@ public class Command {
    }
 
    public String rakeCmdLine() {
-      return RAKE + " " + command; 
+      return OsPlatform.getRakeOsCommand() + " " + command; 
    }
 
    @Override
@@ -98,9 +97,4 @@ public class Command {
       if (!command.equals(other.command)) return false;
       return true;
    }
-   
-   private static boolean isWindows() {
-      return Configuration.isWindows();
-   }
-   
 }

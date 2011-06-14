@@ -4,8 +4,6 @@ import java.awt.SystemTray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -15,7 +13,6 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.netstal.tools.nubs.launcher.domain.CommandHistory;
 import com.netstal.tools.nubs.launcher.domain.Configuration;
-import com.netstal.tools.nubs.launcher.domain.ConsoleRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.FilterChain;
 import com.netstal.tools.nubs.launcher.domain.ICommandHistory;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
@@ -34,16 +31,13 @@ import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 import com.netstal.tools.nubs.launcher.domain.job.RakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.RakeJobRepository;
-import com.netstal.tools.nubs.launcher.infrastructure.ConsoleLauncher;
-import com.netstal.tools.nubs.launcher.infrastructure.IConsoleLauncher;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessBuilderWrapper;
 import com.netstal.tools.nubs.launcher.infrastructure.ProcessOutputCapture;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
 import com.netstal.tools.nubs.launcher.ui.INotification;
-import com.netstal.tools.nubs.launcher.ui.JobPanel;
-import com.netstal.tools.nubs.launcher.ui.LauncherPanel;
 import com.netstal.tools.nubs.launcher.ui.LoadTasksPanel;
+import com.netstal.tools.nubs.launcher.ui.NotificationStub;
 import com.netstal.tools.nubs.launcher.ui.NubsLauncherFrame;
 import com.netstal.tools.nubs.launcher.ui.RakeTasksField;
 import com.netstal.tools.nubs.launcher.ui.TrayNotification;
@@ -77,19 +71,7 @@ public class NubsLauncher {
          protected void configure() {
             Configuration configuration = new Configuration();
             
-            
-            bind(IConsoleLauncher.class).to(ConsoleLauncher.class);
-            
-            if (configuration.getFlag("launch.UseInternalLauncher")) {
-               LOG.log(Level.INFO, "Use internal launcher");
-               bind(IRakeLauncher.class).to(InternalRakeLauncher.class); 
-               bind(JComponent.class).annotatedWith(LauncherPanel.class).to(JobPanel.class);
-            } else {
-               LOG.log(Level.INFO, "Use console launcher");
-               bind(IRakeLauncher.class).to(ConsoleRakeLauncher.class);       
-               bind(JComponent.class).annotatedWith(LauncherPanel.class).to(JPanel.class);
-            }
-            
+            bind(IRakeLauncher.class).to(InternalRakeLauncher.class); 
             
             bind(IRakeTaskParser.class).to(RakeTaskParser.class);
             bind(IRakeTaskImporter.class).to(RakeTaskImporter.class);
@@ -110,7 +92,7 @@ public class NubsLauncher {
             if (SystemTray.isSupported()) {
                bind(INotification.class).to(TrayNotification.class).in(Singleton.class);               
             } else {
-               // TODO
+               bind(INotification.class).to(NotificationStub.class).in(Singleton.class);
             }
             
             

@@ -24,18 +24,6 @@ public class Configuration implements IConfiguration {
 	   loadProperties();
    }
 	
-	@Override
-   public String getRakeOsCommand() {
-      if (isWindows()) {
-         return "rake.bat";
-      }
-      return "rake";
-   }
-	
-	public static boolean isWindows() {
-      return System.getProperty("os.name").toLowerCase().indexOf( "windows" ) >= 0;
-   }
-
    @Override
    public String get(String key) {
       return properties.getProperty(key);

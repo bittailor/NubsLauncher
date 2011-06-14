@@ -6,25 +6,39 @@
 
 package com.netstal.tools.nubs.launcher.domain;
 
+import static org.easymock.EasyMock.createControl;
+import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
 
+import org.easymock.IMocksControl;
 import org.junit.Before;
 import org.junit.Test;
 
 public class CommandHistoryTest {
 
+   private static final int MAXIMAL_SIZE = 20;
    private CommandHistory commandHistory;
+   private IMocksControl control;
+   private IConfiguration configuration;
 
    @Before
    public void setUp() {
-      commandHistory = new CommandHistory();
+      control = createControl();
+      configuration = control.createMock("configuration",IConfiguration.class);
+      
+      expect(configuration.getInteger(CommandHistory.KEY_MAX_SIZE)).andReturn(MAXIMAL_SIZE).anyTimes();     
+      
+      control.replay();
+      
+      commandHistory = new CommandHistory(configuration);
    }
 
    @Test
    public void testMaximalHistorySize() {
-      int mean = CommandHistory.MAXIMAL_SIZE / 2;
+      
+      int mean = MAXIMAL_SIZE / 2;
       
       for (int i = 0; i < mean ; i++) {
          commandHistory.push(createCommand(i));
@@ -32,10 +46,10 @@ public class CommandHistoryTest {
       
       assertEquals(mean, commandHistory.size());
       
-      for (int i = mean ; i < CommandHistory.MAXIMAL_SIZE + 10 ; i++) {
+      for (int i = mean ; i < MAXIMAL_SIZE + 10 ; i++) {
          commandHistory.push(createCommand(i));
       }  
-      assertEquals(CommandHistory.MAXIMAL_SIZE, commandHistory.size());
+      assertEquals(MAXIMAL_SIZE, commandHistory.size());
       
    }
    
