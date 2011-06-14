@@ -1,4 +1,3 @@
-
 package com.netstal.tools.nubs.launcher.domain.job;
 
 import java.io.File;
