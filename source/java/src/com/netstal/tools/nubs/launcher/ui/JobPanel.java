@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import com.google.inject.Inject;
@@ -44,6 +45,10 @@ import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentState;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderState;
 
 public class JobPanel extends JPanel {
+
+   private static final int TABLE_NUMBER_OF_ROWS_IN_VIEWPORT = 8;
+
+   private static final int TABLE_ROW_HEIGHT = 20;
 
    private static Logger LOG = Logger.getLogger(JobPanel.class.getName());
    
@@ -96,12 +101,7 @@ public class JobPanel extends JPanel {
          @Override
          public void tableChanged(TableModelEvent e) {
             if (e.getType() == TableModelEvent.INSERT) {
-               SwingUtilities.invokeLater(new Runnable() {
-                  @Override
-                  public void run() {
-                     jobs.getSelectionModel().setSelectionInterval(0, 0);
-                  }
-               });
+               selectFirstJob();
             }
             
          }
@@ -124,6 +124,10 @@ public class JobPanel extends JPanel {
 
    private void jobsChanged() {   
       IRakeJob job = getSelectedJob();
+      if(job == null && rakeJobRepository.size() > 0 ) {
+         selectFirstJob();
+      }
+      
       for (IJobSelectionListener listener : jobSelectionListeners) {
          listener.newSelection(job);
       }
@@ -137,13 +141,26 @@ public class JobPanel extends JPanel {
       jobs.setShowVerticalLines(false);
       jobs.setShowHorizontalLines(true);
       jobs.setIntercellSpacing(new Dimension(0, 1));
-      jobs.setRowHeight(20);
+      jobs.setRowHeight(TABLE_ROW_HEIGHT);
+      jobs.setPreferredScrollableViewportSize(new Dimension(0, TABLE_NUMBER_OF_ROWS_IN_VIEWPORT * TABLE_ROW_HEIGHT));
       
       TableColumnModel columnModel = jobs.getColumnModel();
-      columnModel.getColumn(0).setCellRenderer(new RenderCommand());
-      columnModel.getColumn(1).setCellRenderer(new RenderState());
-      columnModel.getColumn(2).setCellRenderer(new RenderCurrentState());
-      columnModel.getColumn(3).setCellRenderer(new RenderAutoRetry());
+      
+      TableColumn column = columnModel.getColumn(0);
+      column.setCellRenderer(new RenderCommand());      
+      column.setPreferredWidth(410);
+      
+      column = columnModel.getColumn(1);
+      column.setCellRenderer(new RenderState());
+      column.setPreferredWidth(180);
+      
+      column = columnModel.getColumn(2);
+      column.setCellRenderer(new RenderCurrentState());
+      column.setPreferredWidth(300);
+      
+      column = columnModel.getColumn(3);
+      column.setCellRenderer(new RenderAutoRetry());
+      column.setPreferredWidth(60);
       
       JPanel scrollPanePanel = new JPanel(new BorderLayout()); 
       scrollPanePanel.setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
@@ -194,6 +211,17 @@ public class JobPanel extends JPanel {
       return rakeJobRepository.get(selectedRow);
    }
     
+   private void selectFirstJob() {
+      SwingUtilities.invokeLater(new Runnable() {
+         @Override
+         public void run() {
+            if (jobs.getModel().getRowCount() > 0) {
+               jobs.getSelectionModel().setSelectionInterval(0, 0);
+            }
+         }
+      });
+   }
+
    private static class OpenLogAction extends AbstractJobDependentAction {
       
       private static final long serialVersionUID = 1L;
@@ -251,7 +279,7 @@ public class JobPanel extends JPanel {
       }     
    }
    
-   private class FailAction extends AbstractFailedJobDependentAction {
+   private static class FailAction extends AbstractFailedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public FailAction() {
@@ -263,15 +291,7 @@ public class JobPanel extends JPanel {
       protected void actionPerformed(IRakeJob job) {
          job.fail();           
       }  
-      
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = getSelectedJob();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            job.fail();          
-         }
-      }     
+          
    }
    
    private class RemoveAction extends AbstractFinishedJobDependentAction {
