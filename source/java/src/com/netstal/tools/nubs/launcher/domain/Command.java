@@ -8,7 +8,7 @@ package com.netstal.tools.nubs.launcher.domain;
 
 import java.util.ArrayList;
 
-import com.netstal.tools.nubs.launcher.infrastructure.OsPlatform;
+import com.netstal.tools.nubs.launcher.infrastructure.OperatingSystem;
 
 
 public class Command {
@@ -30,7 +30,7 @@ public class Command {
       String[] fragments = command.trim().split(" ");
 
       ArrayList<String> arguments = new ArrayList<String>(fragments.length);
-      arguments.add(OsPlatform.getRakeOsCommand());
+      arguments.add(OperatingSystem.getRakeCommand());
 
       StringBuilder buffer = new StringBuilder();
       for (String fragment : fragments) {
@@ -72,7 +72,7 @@ public class Command {
    }
 
    public String rakeCmdLine() {
-      return OsPlatform.getRakeOsCommand() + " " + command; 
+      return OperatingSystem.getRakeCommand() + " " + command; 
    }
 
    @Override

@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcess;
 import com.netstal.tools.nubs.launcher.infrastructure.IProcessBuilder;
-import com.netstal.tools.nubs.launcher.infrastructure.OsPlatform;
+import com.netstal.tools.nubs.launcher.infrastructure.OperatingSystem;
 
 public class RakeTaskImporter implements IRakeTaskImporter {
 
@@ -22,7 +22,7 @@ public class RakeTaskImporter implements IRakeTaskImporter {
    
    @Inject
    public RakeTaskImporter(Provider<IRakeTaskParser> parserProvider, Provider<IProcessBuilder> processBuilderProvider, IConfiguration configuration) {
-      rakeOsCommand = OsPlatform.getRakeOsCommand();
+      rakeOsCommand = OperatingSystem.getRakeCommand();
       this.parserProvider = parserProvider;
       this.processBuilderProvider = processBuilderProvider;
    }

@@ -1,9 +1,9 @@
 package com.netstal.tools.nubs.launcher.infrastructure;
 
-public class OsPlatform {
+public class OperatingSystem {
 
    
-   public static String getRakeOsCommand() {
+   public static String getRakeCommand() {
       if (isWindows()) {
          return "rake.bat";
       }
