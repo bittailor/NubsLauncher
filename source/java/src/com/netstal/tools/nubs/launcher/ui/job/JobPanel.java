@@ -1,20 +1,14 @@
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.job;
 
 import java.awt.BorderLayout;
-import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -34,23 +28,24 @@ import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
-import com.netstal.tools.nubs.launcher.ui.job.AbstractFailedJobDependentAction;
-import com.netstal.tools.nubs.launcher.ui.job.AbstractFinishedJobDependentAction;
-import com.netstal.tools.nubs.launcher.ui.job.AbstractJobDependentAction;
-import com.netstal.tools.nubs.launcher.ui.job.IJobDependentAction;
-import com.netstal.tools.nubs.launcher.ui.job.IJobSelectionListener;
+import com.netstal.tools.nubs.launcher.ui.job.action.FailAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.IJobDependentAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.IgonreAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.OpenLogAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.RelaunchAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.RemoveAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.RemoveAllFinishedAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.RetryAction;
+import com.netstal.tools.nubs.launcher.ui.job.action.ToggleAutoRetryAction;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderAutoRetry;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderCommand;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentState;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderState;
 
 public class JobPanel extends JPanel {
-
+   
    private static final int TABLE_NUMBER_OF_ROWS_IN_VIEWPORT = 8;
-
    private static final int TABLE_ROW_HEIGHT = 20;
-
-   private static Logger LOG = Logger.getLogger(JobPanel.class.getName());
    
    private IRakeJobRepository rakeJobRepository;
    private IRakeLauncher launcher;
@@ -60,9 +55,6 @@ public class JobPanel extends JPanel {
    private JTable jobs;
    
    private List<IJobSelectionListener> jobSelectionListeners;
-
-   private RemoveAllFinishedAction removeAllFinishedAction;
-
 
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, 
@@ -184,13 +176,11 @@ public class JobPanel extends JPanel {
       addJobDependendAction(new RetryAction());
       addJobDependendAction(new IgonreAction());
       addJobDependendAction(new FailAction());
-      addJobDependendAction(new RelaunchAction());
-      addJobDependendAction(new RemoveAction());
+      addJobDependendAction(new RelaunchAction(launcher));
+      addJobDependendAction(new RemoveAction(rakeJobRepository));
       
       toolBar.add(Box.createHorizontalGlue());
-      removeAllFinishedAction = new RemoveAllFinishedAction();
-      toolBar.add(removeAllFinishedAction);
-      
+      toolBar.add(new RemoveAllFinishedAction(rakeJobRepository));     
    }
    
    private void addJobDependendAction(IJobDependentAction action) {
@@ -220,137 +210,5 @@ public class JobPanel extends JPanel {
             }
          }
       });
-   }
-
-   private static class OpenLogAction extends AbstractJobDependentAction {
-      
-      private static final long serialVersionUID = 1L;
-      
-      private static void openLogfile(IRakeJob job) {
-         Desktop desktop = Desktop.getDesktop();
-         try {
-            desktop.open(job.getLogFile());
-         }
-         catch (Exception exception) {
-            LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
-         }
-      }
-      
-      public OpenLogAction() {
-         super("Open Log",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Open The Log File");
-      }
-
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         openLogfile(job);         
-      }
-      
-     
-         
-   }
-         
-   private static class RetryAction extends AbstractFailedJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public RetryAction() {
-         super("Retry",new ImageIcon(NubsLauncherFrame.class.getResource("images/RetryFw.png")));
-         this.putValue(SHORT_DESCRIPTION, "Retry The Failed Task");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         job.retry();          
-      }
-         
-   }
-   
-   private static class IgonreAction extends AbstractFailedJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public IgonreAction() {
-         super("Ignore",new ImageIcon(NubsLauncherFrame.class.getResource("images/IgnoreFw.png")));
-         this.putValue(SHORT_DESCRIPTION, "Ignore The Failed Task And Continue");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         job.ignore();           
-      }     
-   }
-   
-   private static class FailAction extends AbstractFailedJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public FailAction() {
-         super("Fail",new ImageIcon(NubsLauncherFrame.class.getResource("images/FailFw.png")));
-         this.putValue(SHORT_DESCRIPTION, "Quit The Job");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         job.fail();           
-      }  
-          
-   }
-   
-   private class RemoveAction extends AbstractFinishedJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public RemoveAction() {
-         super("Remove",new ImageIcon(NubsLauncherFrame.class.getResource("images/Remove.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Remove This Job");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         rakeJobRepository.clear(job);           
-      }
-             
-   }
-   
-   private class RelaunchAction extends AbstractFinishedJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public RelaunchAction() {
-         super("Relaunch",new ImageIcon(NubsLauncherFrame.class.getResource("images/Launch.png")));
-         this.putValue(SHORT_DESCRIPTION, "Launch This Job Again");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         launcher.relaunch(job);           
-      }
-     
-   }
-   
-   
-   private static class ToggleAutoRetryAction extends AbstractJobDependentAction {
-      private static final long serialVersionUID = 1L;
-
-      public ToggleAutoRetryAction() {
-         super("AutoRetry",new ImageIcon(NubsLauncherFrame.class.getResource("images/AutoRetryFw.png")));
-         this.putValue(SHORT_DESCRIPTION, "Toggle Auto Retry");
-      }
-      
-      @Override
-      protected void actionPerformed(IRakeJob job) {
-         job.setAutoRetry(!job.isAutoRetry());           
-      }
-          
-   }
-   
-   private class RemoveAllFinishedAction extends AbstractAction {
-      private static final long serialVersionUID = 1L;
-
-      public RemoveAllFinishedAction() {
-         super("Remove All Finished Jobs",new ImageIcon(NubsLauncherFrame.class.getResource("images/RemoveAll.gif")));
-         this.putValue(SHORT_DESCRIPTION, "Remove All Finished Jobs");
-      }
-      
-      @Override
-      public void actionPerformed(ActionEvent e) {
-         rakeJobRepository.clearFinished();
-      }     
    }
 }

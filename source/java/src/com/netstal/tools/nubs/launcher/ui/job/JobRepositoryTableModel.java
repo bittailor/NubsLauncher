@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.job;
 
 import javax.swing.table.AbstractTableModel;
 

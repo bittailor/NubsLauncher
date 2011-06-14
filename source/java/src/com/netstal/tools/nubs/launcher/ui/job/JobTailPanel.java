@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.ui;
+package com.netstal.tools.nubs.launcher.ui.job;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -12,7 +12,6 @@ import javax.swing.JScrollPane;
 
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
-import com.netstal.tools.nubs.launcher.ui.job.IJobSelectionListener;
 
 public class JobTailPanel extends JPanel implements IEventListener<Collection<String>>, IJobSelectionListener {
 

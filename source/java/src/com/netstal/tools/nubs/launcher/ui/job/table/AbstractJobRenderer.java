@@ -9,7 +9,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
-import com.netstal.tools.nubs.launcher.ui.ColorJobStateVisitor;
+import com.netstal.tools.nubs.launcher.ui.job.ColorJobStateVisitor;
 
 public abstract class AbstractJobRenderer extends JLabel implements TableCellRenderer {
    

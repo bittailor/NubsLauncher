@@ -1,58 +1,50 @@
 package com.netstal.tools.nubs.launcher.ui.job;
 
-import javax.swing.Icon;
-
 import com.netstal.tools.nubs.launcher.domain.job.state.Building;
 import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedExceptionally;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
 import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
+import com.netstal.tools.nubs.launcher.domain.job.state.IJobStateVisitor;
 import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
 
-public abstract class AbstractFinishedJobDependentAction extends AbstractJobDependentAction {
+public class DisplayNameJobStateVisitor implements IJobStateVisitor {
 
-   public AbstractFinishedJobDependentAction() {
-      super();
-   }
-
-   public AbstractFinishedJobDependentAction(String name, Icon icon) {
-      super(name, icon);
-   }
-
-   public AbstractFinishedJobDependentAction(String name) {
-      super(name);
+   
+   private String name;
+   
+   public String getName() {
+      return name;
    }
 
    @Override
    public void visit(Idle state) {
-      setEnabled(false);
+      name = "Idle";
    }
 
    @Override
    public void visit(Building state) {
-      setEnabled(false);
+      name = "Building";
    }
 
    @Override
    public void visit(Failed state) {
-      setEnabled(false);
+      name = "Failed" ;
    }
 
    @Override
    public void visit(FinishedSucessfully state) {
-      setEnabled(true);
+      name = "Finished Sucessfully" ;
    }
 
    @Override
    public void visit(FinishedFaultily state) {
-      setEnabled(true);
+      name = "Finished With A Failure" ;
    }
 
    @Override
    public void visit(FinishedExceptionally state) {
-      setEnabled(true);
+      name = "Finished With An Exception" ;
    }
-
-  
 
 }

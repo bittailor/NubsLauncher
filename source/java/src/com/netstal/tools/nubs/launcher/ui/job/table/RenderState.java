@@ -1,7 +1,7 @@
 package com.netstal.tools.nubs.launcher.ui.job.table;
 
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
-import com.netstal.tools.nubs.launcher.ui.DisplayNameJobStateVisitor;
+import com.netstal.tools.nubs.launcher.ui.job.DisplayNameJobStateVisitor;
 
 public class RenderState extends AbstractJobRenderer {
    @Override

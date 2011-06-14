@@ -33,6 +33,7 @@ import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
 import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.infrastructure.Version;
+import com.netstal.tools.nubs.launcher.ui.job.JobPanel;
 
 public class NubsLauncherFrame extends JFrame {
  

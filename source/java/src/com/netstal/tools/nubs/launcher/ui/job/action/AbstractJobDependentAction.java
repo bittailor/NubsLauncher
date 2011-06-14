@@ -1,4 +1,4 @@
-package com.netstal.tools.nubs.launcher.ui.job;
+package com.netstal.tools.nubs.launcher.ui.job.action;
 
 import java.awt.event.ActionEvent;
 
