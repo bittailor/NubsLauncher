@@ -12,8 +12,9 @@ import javax.swing.JScrollPane;
 
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
+import com.netstal.tools.nubs.launcher.ui.job.IJobSelectionListener;
 
-public class JobTailPanel extends JPanel implements IEventListener<Collection<String>> {
+public class JobTailPanel extends JPanel implements IEventListener<Collection<String>>, IJobSelectionListener {
 
    private JList list;
    private DefaultListModel listModel;
@@ -68,6 +69,15 @@ public class JobTailPanel extends JPanel implements IEventListener<Collection<St
       for (String string : tail) {
          listModel.addElement(string);
       }
+   }
+
+   @Override
+   public void newSelection(IRakeJob job) {
+      if (job != null) {
+         setJob(job);
+         return;
+      }
+      resetJob();
    }
 
     

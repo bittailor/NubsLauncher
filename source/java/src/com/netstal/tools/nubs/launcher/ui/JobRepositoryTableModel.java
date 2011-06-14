@@ -1,45 +1,56 @@
 package com.netstal.tools.nubs.launcher.ui;
 
-import javax.swing.AbstractListModel;
+import javax.swing.table.AbstractTableModel;
 
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 
-public class JobListModel extends AbstractListModel {
+public class JobRepositoryTableModel extends AbstractTableModel {
   
+   private static final String[] NAMES = {"Command","State","Current Task","Auto Retry"};
    
    private IRakeJobRepository rakeJobRepository;
-   private int oldSize;
 
-   public JobListModel(IRakeJobRepository rakeJobRepository) {
+   public JobRepositoryTableModel(IRakeJobRepository rakeJobRepository) {
       this.rakeJobRepository = rakeJobRepository;
-      oldSize = getSize();
+      attachListeners(rakeJobRepository);    
+   }
+
+   private void attachListeners(IRakeJobRepository rakeJobRepository) {
       rakeJobRepository.addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJobRepository>() {
          @Override
          public void notifyEvent(IRakeJobRepository source) {
-            fireIntervalRemoved(JobListModel.this, 0, oldSize);
-            fireIntervalAdded(JobListModel.this, 0, getSize());
-            oldSize = getSize(); 
-         }
-      });
-      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob.Event>() {     
-         @Override
-         public void notifyEvent(final IRakeJob.Event event) {
-            fireContentsChanged(JobListModel.this, 0, getSize());                               
+            fireTableDataChanged(); 
          }
       });
       
+      rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob.Event>() {     
+         @Override
+         public void notifyEvent(final IRakeJob.Event event) {
+            fireTableRowsUpdated(0, getRowCount());                               
+         }
+      });
    }
    
    @Override
-   public int getSize() {
+   public String getColumnName(int column) {
+      return NAMES[column];
+   }
+
+   @Override
+   public int getRowCount() {
       return rakeJobRepository.size();
    }
 
    @Override
-   public Object getElementAt(int index) {
-      return rakeJobRepository.get(index);
+   public int getColumnCount() {
+      return NAMES.length;
+   }
+
+   @Override
+   public Object getValueAt(int rowIndex, int columnIndex) {
+      return rakeJobRepository.get(rowIndex);        
    }
    
 }

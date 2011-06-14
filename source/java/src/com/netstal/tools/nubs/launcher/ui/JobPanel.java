@@ -2,9 +2,12 @@ package com.netstal.tools.nubs.launcher.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,245 +15,135 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableColumnModel;
 
 import com.google.inject.Inject;
 import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IEventListener;
 import com.netstal.tools.nubs.launcher.domain.IRakeLauncher;
-import com.netstal.tools.nubs.launcher.domain.IWorkspace;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJob;
 import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
-import com.netstal.tools.nubs.launcher.domain.job.state.Building;
-import com.netstal.tools.nubs.launcher.domain.job.state.Failed;
-import com.netstal.tools.nubs.launcher.domain.job.state.FinishedExceptionally;
-import com.netstal.tools.nubs.launcher.domain.job.state.FinishedFaultily;
-import com.netstal.tools.nubs.launcher.domain.job.state.FinishedSucessfully;
-import com.netstal.tools.nubs.launcher.domain.job.state.IJobStateVisitor;
-import com.netstal.tools.nubs.launcher.domain.job.state.Idle;
+import com.netstal.tools.nubs.launcher.ui.job.AbstractFailedJobDependentAction;
+import com.netstal.tools.nubs.launcher.ui.job.AbstractFinishedJobDependentAction;
+import com.netstal.tools.nubs.launcher.ui.job.AbstractJobDependentAction;
+import com.netstal.tools.nubs.launcher.ui.job.IJobDependentAction;
+import com.netstal.tools.nubs.launcher.ui.job.IJobSelectionListener;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderAutoRetry;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderCommand;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentState;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderState;
 
 public class JobPanel extends JPanel {
 
    private static Logger LOG = Logger.getLogger(JobPanel.class.getName());
    
    private IRakeJobRepository rakeJobRepository;
-   private IWorkspace workspace;
    private IRakeLauncher launcher;
    private IConfiguration configuration;
    private JobTailPanel jobTailPanel;
    private JToolBar toolBar;
-   private JList jobs;
-
-   private OpenLogAction openAction;
-   private ToggleAutoRetryAction toggleAutoRetryAction;
-   private RetryAction retryAction;
-   private IgonreAction igonreAction;
-   private FailAction failAction;
-   private RemoveAction removeAction;
-   private RelaunchAction relaunchAction;
+   private JTable jobs;
+   
+   private List<IJobSelectionListener> jobSelectionListeners;
 
    private RemoveAllFinishedAction removeAllFinishedAction;
 
 
    @Inject
    public JobPanel(IRakeJobRepository rakeJobRepository, 
-                   IWorkspace workspace, 
                    IRakeLauncher launcher,
                    IConfiguration configuration) {
       this.rakeJobRepository = rakeJobRepository;
-      this.workspace = workspace;
       this.launcher = launcher;
       this.configuration = configuration;
+      jobSelectionListeners = new LinkedList<IJobSelectionListener>();
       createUi();
       createActions();
+      jobsChanged();
    }
 
    private void createActions() {
-      jobs.addListSelectionListener(new ListSelectionListener() {        
+      jobs.getSelectionModel().addListSelectionListener(new ListSelectionListener() {        
          @Override
          public void valueChanged(ListSelectionEvent e) {
             jobsChanged();
          }
-
       });
       
       jobs.addMouseListener(new MouseAdapter() {
-         
-             @Override
+         @Override
          public void mouseClicked(MouseEvent e) {
             if (e.getClickCount()>1) {
-               openLogfile((IRakeJob)jobs.getSelectedValue());
+               
+               OpenLogAction.openLogfile(getSelectedJob());
             }
             
          }
       });
       
-      jobs.getModel().addListDataListener(new ListDataListener() {
+      jobs.getModel().addTableModelListener(new TableModelListener() {
          
          @Override
-         public void intervalRemoved(ListDataEvent e) {
-         }
-         
-         @Override
-         public void intervalAdded(ListDataEvent e) {
-            SwingUtilities.invokeLater(new Runnable() {
-               @Override
-               public void run() {
-                  if (jobs.getModel().getSize() > 0) {
-                     jobs.setSelectedIndex(0);
+         public void tableChanged(TableModelEvent e) {
+            if (e.getType() == TableModelEvent.INSERT) {
+               SwingUtilities.invokeLater(new Runnable() {
+                  @Override
+                  public void run() {
+                     jobs.getSelectionModel().setSelectionInterval(0, 0);
                   }
-               }
-            });
-         }
-         
-         @Override
-         public void contentsChanged(ListDataEvent e) {   
+               });
+            }
+            
          }
       });
-      
+       
       rakeJobRepository.getJobsEventSource().addListenerNotifyInSwingDispatchThread(new IEventListener<IRakeJob.Event>() {       
          @Override
          public void notifyEvent(final IRakeJob.Event event) {
             SwingUtilities.invokeLater(new Runnable() {
                @Override
                public void run() {
-                  jobsChanged();  
-                  if (event.stateChanged && event.job.getState().equals(Failed.INSTANCE)) {
-                     showRetryGui(event.job);
-                  }}
+                  jobsChanged();
+               }
             });
          }
       });
    }
    
-   private void showRetryGui(IRakeJob job) {
-      if (configuration.getFlag("notification.ShowRetryDialog")){
-         Object[] options = {"Retry","Ignore","Fail"};
-         int n = JOptionPane.showOptionDialog(null,
-                  "<html>" +
-                  "Task failed:<br/>"+
-                  "<b>" +  job.getCurrentTask() + "</b><br/>",
-                  "NUBS Launcher @ " + workspace.getRoot().getName(),
-                  JOptionPane.YES_NO_OPTION,
-                  JOptionPane.INFORMATION_MESSAGE,
-                  new ImageIcon(NubsLauncherFrame.class.getResource("images/Rocket.png")),
-                  options,
-                  options[0]);
-         if (n == 0) {
-            job.retry();
-         } else if (n == 1) {
-            job.ignore();
-         } else if (n == 2) {
-            job.fail();
-         }
-      }
-   }
+   
 
    private void jobsChanged() {   
-      if (jobs.getModel().getSize() == 0) {
-         jobTailPanel.resetJob();
-         disableAll();
-         return;
+      IRakeJob job = getSelectedJob();
+      for (IJobSelectionListener listener : jobSelectionListeners) {
+         listener.newSelection(job);
       }
-      
-      if (jobs.isSelectionEmpty()) {
-         jobTailPanel.resetJob();
-         disableAll();
-         return;
-      }
-      
-      Object selectedValue = jobs.getSelectedValue();
-      if (selectedValue instanceof IRakeJob) {
-         IRakeJob job = (IRakeJob) selectedValue;
-         jobTailPanel.setJob(job);
-         openAction.setEnabled(true);
-         toggleAutoRetryAction.setEnabled(true);
-         
-         job.getState().accept(new IJobStateVisitor() {
-            
-            private void finished() {
-               retryAction.setEnabled(false);
-               igonreAction.setEnabled(false);
-               failAction.setEnabled(false);
-               relaunchAction.setEnabled(true);
-               removeAction.setEnabled(true);              
-            }
-            
-            
-            @Override
-            public void visit(FinishedExceptionally state) {
-               finished();
-            }
-            
-           
-
-            @Override
-            public void visit(FinishedFaultily state) {
-               finished();
-            }
-            
-            @Override
-            public void visit(FinishedSucessfully state) {
-               finished();
-            }
-            
-            @Override
-            public void visit(Failed state) {
-               retryAction.setEnabled(true);
-               igonreAction.setEnabled(true);
-               failAction.setEnabled(true); 
-               relaunchAction.setEnabled(false);
-               removeAction.setEnabled(false);
-            }
-            
-            @Override
-            public void visit(Building state) {
-               retryAction.setEnabled(false);
-               igonreAction.setEnabled(false);
-               failAction.setEnabled(false); 
-               relaunchAction.setEnabled(false);
-               removeAction.setEnabled(false);
-               
-            }
-            
-            @Override
-            public void visit(Idle state) {
-               retryAction.setEnabled(false);
-               igonreAction.setEnabled(false);
-               failAction.setEnabled(false); 
-               relaunchAction.setEnabled(false);
-               removeAction.setEnabled(false);        
-            }
-         });
-      } 
-   }
-
-   private void disableAll() {
-      openAction.setEnabled(false);
-      toggleAutoRetryAction.setEnabled(false);
-      retryAction.setEnabled(false);
-      igonreAction.setEnabled(false);
-      failAction.setEnabled(false);
-      relaunchAction.setEnabled(false);
-      removeAction.setEnabled(false);
    }
 
    private void createUi() {
       setLayout(new BorderLayout());
-      //setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
-      jobs = new JList(new JobListModel(rakeJobRepository));
+      jobs = new JTable(new JobRepositoryTableModel(rakeJobRepository));
       jobs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      jobs.setCellRenderer(new JobRenderer());
+      jobs.setShowGrid(false);
+      jobs.setShowVerticalLines(false);
+      jobs.setShowHorizontalLines(true);
+      jobs.setIntercellSpacing(new Dimension(0, 1));
+      jobs.setRowHeight(20);
+      
+      TableColumnModel columnModel = jobs.getColumnModel();
+      columnModel.getColumn(0).setCellRenderer(new RenderCommand());
+      columnModel.getColumn(1).setCellRenderer(new RenderState());
+      columnModel.getColumn(2).setCellRenderer(new RenderCurrentState());
+      columnModel.getColumn(3).setCellRenderer(new RenderAutoRetry());
       
       JPanel scrollPanePanel = new JPanel(new BorderLayout()); 
       scrollPanePanel.setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));
@@ -262,66 +155,74 @@ public class JobPanel extends JPanel {
       add(south, BorderLayout.SOUTH);
       
       jobTailPanel = new JobTailPanel(configuration.getInteger("job.TailSize"));
+      jobSelectionListeners.add(jobTailPanel);
       south.add(jobTailPanel, BorderLayout.CENTER);
       
       toolBar = new JToolBar();
       toolBar.setFloatable(false);
       south.add(toolBar, BorderLayout.NORTH);
       
-      openAction = new OpenLogAction();
-      toolBar.add(openAction);
-      toggleAutoRetryAction = new ToggleAutoRetryAction();
-      toolBar.add(toggleAutoRetryAction);
-      retryAction = new RetryAction();
-      toolBar.add(retryAction);
-      igonreAction = new IgonreAction();
-      toolBar.add(igonreAction);
-      failAction = new FailAction();
-      toolBar.add(failAction);
-      relaunchAction = new RelaunchAction();
-      toolBar.add(relaunchAction);
-      removeAction = new RemoveAction();
-      toolBar.add(removeAction);
+      addJobDependendAction(new OpenLogAction());
+      addJobDependendAction(new ToggleAutoRetryAction());
+      addJobDependendAction(new RetryAction());
+      addJobDependendAction(new IgonreAction());
+      addJobDependendAction(new FailAction());
+      addJobDependendAction(new RelaunchAction());
+      addJobDependendAction(new RemoveAction());
       
       toolBar.add(Box.createHorizontalGlue());
       removeAllFinishedAction = new RemoveAllFinishedAction();
       toolBar.add(removeAllFinishedAction);
       
-      disableAll();
+   }
+   
+   private void addJobDependendAction(IJobDependentAction action) {
+      jobSelectionListeners.add(action);
+      toolBar.add(action);
+   }
+   
+   private IRakeJob getSelectedJob() {
+      int selectedRow = jobs.getSelectedRow();
       
-   }
-   
-   
-   private void openLogfile(IRakeJob job) {
-      Desktop desktop = Desktop.getDesktop();
-      try {
-         desktop.open(job.getLogFile());
+      if (selectedRow < 0) {
+         return null;
       }
-      catch (Exception exception) {
-         LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
+      if (selectedRow >= rakeJobRepository.size()) {
+         return null;
       }
+      
+      return rakeJobRepository.get(selectedRow);
    }
-
-
-   private class OpenLogAction extends AbstractAction {
+    
+   private static class OpenLogAction extends AbstractJobDependentAction {
+      
       private static final long serialVersionUID = 1L;
-
+      
+      private static void openLogfile(IRakeJob job) {
+         Desktop desktop = Desktop.getDesktop();
+         try {
+            desktop.open(job.getLogFile());
+         }
+         catch (Exception exception) {
+            LOG.log(Level.WARNING, "Could Not Launch log file editor", exception);
+         }
+      }
+      
       public OpenLogAction() {
          super("Open Log",new ImageIcon(NubsLauncherFrame.class.getResource("images/OpenLog.gif")));
          this.putValue(SHORT_DESCRIPTION, "Open The Log File");
       }
-      
+
       @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            openLogfile(job);           
-         }
-      }     
-   }
+      protected void actionPerformed(IRakeJob job) {
+         openLogfile(job);         
+      }
       
-   private class RetryAction extends AbstractAction {
+     
+         
+   }
+         
+   private static class RetryAction extends AbstractFailedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public RetryAction() {
@@ -330,16 +231,13 @@ public class JobPanel extends JPanel {
       }
       
       @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            job.retry();          
-         }
-      }     
+      protected void actionPerformed(IRakeJob job) {
+         job.retry();          
+      }
+         
    }
    
-   private class IgonreAction extends AbstractAction {
+   private static class IgonreAction extends AbstractFailedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public IgonreAction() {
@@ -348,16 +246,12 @@ public class JobPanel extends JPanel {
       }
       
       @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            job.ignore();          
-         }
+      protected void actionPerformed(IRakeJob job) {
+         job.ignore();           
       }     
    }
    
-   private class FailAction extends AbstractAction {
+   private class FailAction extends AbstractFailedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public FailAction() {
@@ -366,8 +260,13 @@ public class JobPanel extends JPanel {
       }
       
       @Override
+      protected void actionPerformed(IRakeJob job) {
+         job.fail();           
+      }  
+      
+      @Override
       public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
+         Object selectedValue = getSelectedJob();
          if (selectedValue instanceof IRakeJob) {
             IRakeJob job = (IRakeJob) selectedValue;
             job.fail();          
@@ -375,7 +274,7 @@ public class JobPanel extends JPanel {
       }     
    }
    
-   private class RemoveAction extends AbstractAction {
+   private class RemoveAction extends AbstractFinishedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public RemoveAction() {
@@ -384,12 +283,13 @@ public class JobPanel extends JPanel {
       }
       
       @Override
-      public void actionPerformed(ActionEvent e) {
-         rakeJobRepository.clear((IRakeJob)jobs.getSelectedValue());
-      }     
+      protected void actionPerformed(IRakeJob job) {
+         rakeJobRepository.clear(job);           
+      }
+             
    }
    
-   private class RelaunchAction extends AbstractAction {
+   private class RelaunchAction extends AbstractFinishedJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public RelaunchAction() {
@@ -398,17 +298,14 @@ public class JobPanel extends JPanel {
       }
       
       @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            launcher.relaunch(job);
-                      
-         }
-      }     
+      protected void actionPerformed(IRakeJob job) {
+         launcher.relaunch(job);           
+      }
+     
    }
    
-   private class ToggleAutoRetryAction extends AbstractAction {
+   
+   private static class ToggleAutoRetryAction extends AbstractJobDependentAction {
       private static final long serialVersionUID = 1L;
 
       public ToggleAutoRetryAction() {
@@ -417,13 +314,10 @@ public class JobPanel extends JPanel {
       }
       
       @Override
-      public void actionPerformed(ActionEvent e) {
-         Object selectedValue = jobs.getSelectedValue();
-         if (selectedValue instanceof IRakeJob) {
-            IRakeJob job = (IRakeJob) selectedValue;
-            job.setAutoRetry(!job.isAutoRetry());         
-         }
-      }     
+      protected void actionPerformed(IRakeJob job) {
+         job.setAutoRetry(!job.isAutoRetry());           
+      }
+          
    }
    
    private class RemoveAllFinishedAction extends AbstractAction {
@@ -439,9 +333,4 @@ public class JobPanel extends JPanel {
          rakeJobRepository.clearFinished();
       }     
    }
-   
-   
-   
-  
-   
 }
