@@ -119,7 +119,7 @@
 		</emma>
 	</target>
 
-	<target name="unittest" depends="instrument">
+	<target name="unittest" depends="instrument" unless="SkipTest">
 		<mkdir dir="${target.unittest}" />
 
 		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="test.failed">

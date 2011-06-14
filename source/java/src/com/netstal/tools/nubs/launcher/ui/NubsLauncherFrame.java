@@ -8,8 +8,11 @@ package com.netstal.tools.nubs.launcher.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,7 +119,10 @@ public class NubsLauncherFrame extends JFrame {
    }
    
    private void createUi() {
-      setIconImage(new ImageIcon(getClass().getResource("images/Rocket.png")).getImage());      
+      List<Image> icons = new ArrayList<Image>();
+      icons.add(new ImageIcon(getClass().getResource("images/Rocket.png")).getImage());
+      icons.add(new ImageIcon(getClass().getResource("images/Launch.png")).getImage());
+      setIconImages(icons);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       
       layersLayout = new CardLayout();
