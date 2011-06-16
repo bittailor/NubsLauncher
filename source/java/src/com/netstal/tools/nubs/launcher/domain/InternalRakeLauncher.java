@@ -33,6 +33,9 @@ public class InternalRakeLauncher implements IRakeLauncher {
       IRakeJob newJob = rakeJobProvider.get();
       newJob.command(job.getCommand());
       newJob.setAutoRetry(job.isAutoRetry());
+      if (job.isFinished()) {
+         repository.clear(job);
+      }
       launch(newJob);
    }
    
