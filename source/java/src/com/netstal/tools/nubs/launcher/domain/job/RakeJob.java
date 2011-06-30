@@ -41,6 +41,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    private Command command;
    private IProcess process;
    private IRakeBuildOutputParser outputParser;
+   private AtomicInteger totalNumberOfRetries;
    private boolean autoRetry;
    private AtomicInteger currentNumberOfAutoRetries;
    final private int maximumNumberOfAutoRetries;
@@ -62,6 +63,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
+      this.totalNumberOfRetries = new AtomicInteger();
       this.autoRetry = false;
       this.currentNumberOfAutoRetries = new AtomicInteger();
       this.maximumNumberOfAutoRetries = configuration.getInteger("job.MaximumNumberOfAutoRetries");
@@ -151,6 +153,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       if(isFinished()) {
          return;
       }
+      totalNumberOfRetries.incrementAndGet();
       setState(Building.INSTANCE);
       process.out().println("y");
       process.out().flush();   
@@ -238,6 +241,11 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       return isDisposed;
    }
    
+   @Override
+   public int getTotalNumberOfRetries() {
+      return totalNumberOfRetries.get();
+   }
+
    @Override
    public boolean isAutoRetry() {
       return autoRetry;

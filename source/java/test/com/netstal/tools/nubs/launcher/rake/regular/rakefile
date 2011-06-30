@@ -102,6 +102,7 @@ end
 
 task :FailOnce => [:FailOnce_A] 
 
+task :FailMultiple => [:FailOnce, :FailTwice ]
 
 task :LotsOfOutput do 
   100.times do |n|

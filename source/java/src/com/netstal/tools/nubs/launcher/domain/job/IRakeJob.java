@@ -42,6 +42,7 @@ public interface IRakeJob extends IEventSource<IRakeJob.Event> {
    public void ignore();
    public void fail();
 
+   public int getTotalNumberOfRetries();
    public int getMaximumNumberOfAutoRetries();
    public int getCurrentNumberOfAutoRetries();
    public void setAutoRetry(boolean autoRetry);

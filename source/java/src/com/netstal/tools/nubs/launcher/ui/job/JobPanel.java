@@ -41,6 +41,7 @@ import com.netstal.tools.nubs.launcher.ui.job.table.RenderAutoRetry;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderCommand;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentState;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderState;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderTotalNumberOfRetries;
 
 public class JobPanel extends JPanel {
    
@@ -140,7 +141,7 @@ public class JobPanel extends JPanel {
       
       TableColumn column = columnModel.getColumn(0);
       column.setCellRenderer(new RenderCommand());      
-      column.setPreferredWidth(410);
+      column.setPreferredWidth(370);
       
       column = columnModel.getColumn(1);
       column.setCellRenderer(new RenderState());
@@ -153,6 +154,10 @@ public class JobPanel extends JPanel {
       column = columnModel.getColumn(3);
       column.setCellRenderer(new RenderAutoRetry());
       column.setPreferredWidth(60);
+      
+      column = columnModel.getColumn(4);
+      column.setCellRenderer(new RenderTotalNumberOfRetries());
+      column.setPreferredWidth(40);
       
       JPanel scrollPanePanel = new JPanel(new BorderLayout()); 
       scrollPanePanel.setBorder(BorderFactory.createTitledBorder("Launched Rake Jobs"));

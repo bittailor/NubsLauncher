@@ -256,6 +256,37 @@ public class RakeJobTest {
       control.verify();
       
    }
+   
+   @Test
+   public void testTotalNumberOfRetries() throws InterruptedException {
+      
+      expect(process.waitFor()).andAnswer(new IAnswer<Integer>() {
+
+         @Override
+         public Integer answer() throws Throwable {
+            IRakeBuildOutputListener listener = outputListener.getValue();
+            listener.notifyExecuteTask("Task-1");
+            listener.notifyTaskFailed("Task-1");
+            rakeJob.retry();           
+            listener.notifyTaskFailed("Task-1");
+            rakeJob.retry(); 
+            listener.notifyExecuteTask("Task-2");
+            listener.notifyExecuteTask("Task-3");
+            listener.notifyTaskFailed("Task-3");
+            rakeJob.retry();       
+            listener.notifyExecuteTask("Task-4");          
+            return 0;
+         }
+      });
+      
+      control.replay();
+      Command command = new Command(COMMAND);
+      rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
+      rakeJob.command(command).launch();
+      assertEquals(3, rakeJob.getTotalNumberOfRetries());  
+      control.verify();
+      
+   }
 
    private String getRetryString(int numberOfRetries) {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();

@@ -8,7 +8,7 @@ import com.netstal.tools.nubs.launcher.domain.job.IRakeJobRepository;
 
 public class JobRepositoryTableModel extends AbstractTableModel {
   
-   private static final String[] NAMES = {"Command","State","Current Task","Auto Retry"};
+   private static final String[] NAMES = {"Command","State","Current Task","Auto Retry","Retries"};
    
    private IRakeJobRepository rakeJobRepository;
 
