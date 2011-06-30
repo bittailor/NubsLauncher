@@ -219,6 +219,9 @@ public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
    @Override
    public int calculateNumberOfTasks(Command command) {
       List<String> commandTasks = command.getTasks();
+      if (commandTasks.isEmpty()) {
+         commandTasks.add("default");
+      }
       Set<RakeTask> taskSet = new HashSet<RakeTask>();
       for (String taskName : commandTasks) {
          RakeTask task = tasks.get(taskName);
