@@ -39,9 +39,9 @@ import com.netstal.tools.nubs.launcher.ui.job.action.RetryAction;
 import com.netstal.tools.nubs.launcher.ui.job.action.ToggleAutoRetryAction;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderAutoRetry;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderCommand;
-import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentState;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderCurrentTask;
 import com.netstal.tools.nubs.launcher.ui.job.table.RenderState;
-import com.netstal.tools.nubs.launcher.ui.job.table.RenderTotalNumberOfRetries;
+import com.netstal.tools.nubs.launcher.ui.job.table.RenderRetryCounter;
 
 public class JobPanel extends JPanel {
    
@@ -148,7 +148,7 @@ public class JobPanel extends JPanel {
       column.setPreferredWidth(180);
       
       column = columnModel.getColumn(2);
-      column.setCellRenderer(new RenderCurrentState());
+      column.setCellRenderer(new RenderCurrentTask());
       column.setPreferredWidth(300);
       
       column = columnModel.getColumn(3);
@@ -156,7 +156,7 @@ public class JobPanel extends JPanel {
       column.setPreferredWidth(60);
       
       column = columnModel.getColumn(4);
-      column.setCellRenderer(new RenderTotalNumberOfRetries());
+      column.setCellRenderer(new RenderRetryCounter());
       column.setPreferredWidth(40);
       
       JPanel scrollPanePanel = new JPanel(new BorderLayout()); 

@@ -1,6 +1,7 @@
 package com.netstal.tools.nubs.launcher.domain;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.netstal.tools.nubs.launcher.infrastructure.OperatingSystem;
 
@@ -19,7 +20,18 @@ public class Command {
    public String[] command() {      
       return createCommandArray();
    }
-
+   
+   public List<String> getTasks() {
+      String[] commandArray = command();
+      List<String> tasks = new ArrayList<String>(commandArray.length);
+      for (int i = 1; i < commandArray.length; i++) {
+         if (!commandArray[i].contains("=")) {
+            tasks.add(commandArray[i]);
+         }
+      }
+      return tasks;   
+   }
+   
    private String[] createCommandArray() {      
       String[] fragments = command.trim().split(" ");
 
@@ -63,10 +75,6 @@ public class Command {
       String quotes = string.replaceAll("[^\"]", "");
       int numberOfQuotes = quotes.length();
       return Math.abs(numberOfQuotes)%2==1;
-   }
-
-   public String rakeCmdLine() {
-      return OperatingSystem.getRakeCommand() + " " + command; 
    }
 
    @Override

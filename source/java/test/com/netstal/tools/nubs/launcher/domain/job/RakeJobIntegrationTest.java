@@ -1,6 +1,7 @@
 package com.netstal.tools.nubs.launcher.domain.job;
 
 
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createControl;
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
@@ -47,6 +48,9 @@ public class RakeJobIntegrationTest {
       expect(workspace.getRoot())
          .andReturn(TestUtility.getRakeTestWorkspaceRoot())
          .anyTimes();
+      expect(workspace.calculateNumberOfTasks(anyObject(Command.class)))
+      .andReturn(10)
+      .anyTimes();
       
       processBuilderProvider = control.createMock("processBuilderProvider",Provider.class);
       expect(processBuilderProvider.get())

@@ -41,11 +41,14 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    private Command command;
    private IProcess process;
    private IRakeBuildOutputParser outputParser;
-   private AtomicInteger totalNumberOfRetries;
+   private AtomicInteger retryCounter;
    private boolean autoRetry;
-   private AtomicInteger currentNumberOfAutoRetries;
+   private AtomicInteger autoRetryCounter;
    final private int maximumNumberOfAutoRetries;
    private String currentTask;
+   private AtomicInteger taskCounter;
+   private int finalTaskCount;
+   private int calculatedTaskCount;
    private File logFile;
    private PrintWriter log;
    private RingBuffer<String> tailLog;
@@ -63,12 +66,14 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       this.processBuilderProvider = processBuilderProvider;
       this.workspace = workspace;
       this.outputParser = outputParser;
-      this.totalNumberOfRetries = new AtomicInteger();
+      this.retryCounter = new AtomicInteger();
       this.autoRetry = false;
-      this.currentNumberOfAutoRetries = new AtomicInteger();
+      this.autoRetryCounter = new AtomicInteger();
       this.maximumNumberOfAutoRetries = configuration.getInteger("job.MaximumNumberOfAutoRetries");
       this.state = Idle.INSTANCE;
       this.currentTask = "-";
+      this.taskCounter = new AtomicInteger(); 
+      this.calculatedTaskCount = -1;
       this.tailLog = new RingBuffer<String>(configuration.getInteger("job.TailSize"));
       this.tailLogEventSource = new EventSource<Collection<String>>();
       this.isDisposed = false;
@@ -86,12 +91,13 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       try {
          logFile = File.createTempFile("NubsRakeJob", "Log.txt");
          logFile.deleteOnExit();
-         log = new PrintWriter(logFile);
+         log = new PrintWriter(logFile);        
          process = processBuilderProvider.get()
             .command(command.command())
             .directory(workspace.getRoot())
             .outputConsumer(this)
             .start();
+         finalTaskCount = workspace.calculateNumberOfTasks(command);
          setState(Building.INSTANCE);
          int exitValue = process.waitFor();
          LOG.log(Level.INFO, "Job finished with " + exitValue);
@@ -127,6 +133,20 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    public String getCurrentTask() {
       return currentTask;
    }
+     
+   @Override
+   public int getTaskCounter() {
+      return taskCounter.get();
+   }
+   
+   @Override
+   public int getFinalTaskCount() {
+      return finalTaskCount; 
+   }
+   
+   public int getCalculatedTaskCount() {
+      return calculatedTaskCount;
+   }
 
    @Override
    public Command getCommand() {
@@ -145,7 +165,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
 
    @Override
    public void retry() {
-      currentNumberOfAutoRetries.set(0);
+      autoRetryCounter.set(0);
       sendRetry();   
    }
    
@@ -153,7 +173,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       if(isFinished()) {
          return;
       }
-      totalNumberOfRetries.incrementAndGet();
+      retryCounter.incrementAndGet();
       setState(Building.INSTANCE);
       process.out().println("y");
       process.out().flush();   
@@ -193,7 +213,7 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
          return false;
       }
        
-      if (currentNumberOfAutoRetries.incrementAndGet() > maximumNumberOfAutoRetries ) {
+      if (autoRetryCounter.incrementAndGet() > maximumNumberOfAutoRetries ) {
          return false;
       }
       
@@ -202,16 +222,14 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       return true;
    }
 
-   
-
    @Override
    public void notifyExecuteTask(String taskName) {
       if (currentTask.equals(taskName)) {
          return;
-      }
-      
+      }      
       currentTask = taskName;
-      currentNumberOfAutoRetries.set(0);
+      taskCounter.incrementAndGet();
+      autoRetryCounter.set(0);
       notifyEventListeners(event());
    }
 
@@ -242,8 +260,8 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    }
    
    @Override
-   public int getTotalNumberOfRetries() {
-      return totalNumberOfRetries.get();
+   public int getRetryCounter() {
+      return retryCounter.get();
    }
 
    @Override
@@ -254,13 +272,13 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    @Override
    public void setAutoRetry(boolean autoRetry) {
       this.autoRetry = autoRetry;
-      currentNumberOfAutoRetries.set(0);
+      autoRetryCounter.set(0);
       notifyEventListeners(event());
    }
 
    @Override
-   public int getCurrentNumberOfAutoRetries() {
-      return currentNumberOfAutoRetries.get();
+   public int getAutoRetryCounter() {
+      return autoRetryCounter.get();
    }
 
    @Override
@@ -287,7 +305,6 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
       return Collections.unmodifiableCollection(tailLog);
    }
    
-
    @Override
    public IEventSource<Collection<String>> getTailLogEventSource() {
       return tailLogEventSource;
@@ -300,12 +317,5 @@ public class RakeJob extends EventSource<IRakeJob.Event> implements IRakeBuildOu
    private Event stateChangeEvent() {
       return new Event(this,true);
    }
-
-   
-   
-  
-   
-   
-   
    
 }

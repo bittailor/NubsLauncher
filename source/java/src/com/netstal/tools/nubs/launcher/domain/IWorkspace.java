@@ -12,5 +12,6 @@ public interface IWorkspace extends IEventSource<IWorkspace> {
    public void loadTasks();
    public void reloadTasks();
    public Collection<RakeTask> getTasks();
+   public int calculateNumberOfTasks(Command command);
    
 }

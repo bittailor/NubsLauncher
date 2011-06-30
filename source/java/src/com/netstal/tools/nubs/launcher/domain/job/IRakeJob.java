@@ -19,8 +19,7 @@ public interface IRakeJob extends IEventSource<IRakeJob.Event> {
             super();
             this.job = job;
             this.stateChanged = stateChanged;
-         }
-         
+         } 
    }
    
    public IRakeJob command(Command command);
@@ -30,6 +29,8 @@ public interface IRakeJob extends IEventSource<IRakeJob.Event> {
    
    public IJobState getState();
    public String getCurrentTask();
+   public int getTaskCounter();
+   public int getFinalTaskCount();
    public Command getCommand();
    public File getLogFile();
    public boolean isFinished();
@@ -42,9 +43,9 @@ public interface IRakeJob extends IEventSource<IRakeJob.Event> {
    public void ignore();
    public void fail();
 
-   public int getTotalNumberOfRetries();
+   public int getRetryCounter();
    public int getMaximumNumberOfAutoRetries();
-   public int getCurrentNumberOfAutoRetries();
+   public int getAutoRetryCounter();
    public void setAutoRetry(boolean autoRetry);
    public boolean isAutoRetry();
 

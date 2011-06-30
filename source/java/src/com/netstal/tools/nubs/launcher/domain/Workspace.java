@@ -10,7 +10,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -211,6 +214,19 @@ public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
          return new File(configuration.getConfigurationDirectory(),"workspace.properties");
       }
       
+   }
+
+   @Override
+   public int calculateNumberOfTasks(Command command) {
+      List<String> commandTasks = command.getTasks();
+      Set<RakeTask> taskSet = new HashSet<RakeTask>();
+      for (String taskName : commandTasks) {
+         RakeTask task = tasks.get(taskName);
+         if (task != null) {
+            task.fillDependencySet(taskSet);
+         }
+      }
+      return taskSet.size();
    }
    
 }

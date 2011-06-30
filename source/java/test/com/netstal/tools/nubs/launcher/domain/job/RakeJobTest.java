@@ -66,6 +66,10 @@ public class RakeJobTest {
       outputListener = new Capture<IRakeBuildOutputListener>();
       outputConsumer = new Capture<ILineConsumer>();
       
+      expect(workspace.calculateNumberOfTasks(anyObject(Command.class)))
+         .andReturn(10)
+         .anyTimes();
+      
       expect(configuration.getInteger("job.TailSize")).andReturn(10).anyTimes();
       expect(configuration.getInteger("job.MaximumNumberOfAutoRetries")).andReturn(MAX_NUMBER_OF_RETRIES).anyTimes();      
       
@@ -160,19 +164,19 @@ public class RakeJobTest {
          public Integer answer() throws Throwable {
             IRakeBuildOutputListener listener = outputListener.getValue();
             listener.notifyExecuteTask("RetryTask");
-            assertEquals(0, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(0, rakeJob.getAutoRetryCounter());
             listener.notifyTaskFailed("RetryTask");
             assertEquals(getRetryString(1), outputBuffer.toString());
             assertEquals(Building.INSTANCE, rakeJob.getState());
-            assertEquals(1, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(1, rakeJob.getAutoRetryCounter());
             listener.notifyTaskFailed("RetryTask");
             assertEquals(getRetryString(2), outputBuffer.toString()); 
             assertEquals(Building.INSTANCE, rakeJob.getState());
-            assertEquals(2, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(2, rakeJob.getAutoRetryCounter());
             listener.notifyTaskFailed("RetryTask");
             assertEquals(getRetryString(3), outputBuffer.toString()); 
             assertEquals(Building.INSTANCE, rakeJob.getState());
-            assertEquals(3, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(3, rakeJob.getAutoRetryCounter());
             return 0;
          }
       });
@@ -236,9 +240,9 @@ public class RakeJobTest {
             assertEquals(getRetryString(2), outputBuffer.toString());           
             listener.notifyTaskFailed("RetryTask");
             assertEquals(getRetryString(3), outputBuffer.toString());
-            assertEquals(3, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(3, rakeJob.getAutoRetryCounter());
             listener.notifyExecuteTask("NewTask");
-            assertEquals(0, rakeJob.getCurrentNumberOfAutoRetries());
+            assertEquals(0, rakeJob.getAutoRetryCounter());
             listener.notifyTaskFailed("NewTask");
             assertEquals(getRetryString(4), outputBuffer.toString());
             assertEquals(Building.INSTANCE, rakeJob.getState());
@@ -283,7 +287,7 @@ public class RakeJobTest {
       Command command = new Command(COMMAND);
       rakeJob = new RakeJob(processBuilderProvider, outputParser, workspace, configuration);
       rakeJob.command(command).launch();
-      assertEquals(3, rakeJob.getTotalNumberOfRetries());  
+      assertEquals(3, rakeJob.getRetryCounter());  
       control.verify();
       
    }

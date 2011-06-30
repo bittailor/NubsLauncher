@@ -6,7 +6,7 @@ public class RenderAutoRetry extends AbstractJobRenderer {
    @Override
    public void renderJobCell(IRakeJob job) {
       if (job.isAutoRetry()) {
-         setText("" + job.getCurrentNumberOfAutoRetries() + " of " + job.getMaximumNumberOfAutoRetries());
+         setText("" + job.getAutoRetryCounter() + " of " + job.getMaximumNumberOfAutoRetries());
       } else {
          setText("Off");
       }           
