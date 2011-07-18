@@ -25,10 +25,9 @@ public class RakeTask implements Serializable {
       
    }
 
-   public void fillDependencySet(Set<RakeTask> dependecySet) {
+   public void fillDependencySet(Set<RakeTask> dependecySet) throws CircularDependencyException {
       if (dependencyCycleGuard) {
-         // TODO own exception
-         throw new RuntimeException("Circular dependency: " + name);
+         throw new CircularDependencyException("Circular dependency: " + name);
       }
       dependecySet.add(this);
       dependencyCycleGuard = true;

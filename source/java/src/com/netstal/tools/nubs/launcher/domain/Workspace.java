@@ -218,18 +218,24 @@ public class Workspace extends EventSource<IWorkspace> implements IWorkspace {
 
    @Override
    public int calculateNumberOfTasks(Command command) {
-      List<String> commandTasks = command.getTasks();
-      if (commandTasks.isEmpty()) {
-         commandTasks.add("default");
-      }
-      Set<RakeTask> taskSet = new HashSet<RakeTask>();
-      for (String taskName : commandTasks) {
-         RakeTask task = tasks.get(taskName);
-         if (task != null) {
-            task.fillDependencySet(taskSet);
+      try
+      {
+         List<String> commandTasks = command.getTasks();
+         if (commandTasks.isEmpty()) {
+            commandTasks.add("default");
          }
+         Set<RakeTask> taskSet = new HashSet<RakeTask>();
+         for (String taskName : commandTasks) {
+            RakeTask task = tasks.get(taskName);
+            if (task != null) {
+               task.fillDependencySet(taskSet);
+            }
+         }
+         return taskSet.size();
+      } catch (CircularDependencyException e) {
+         LOG.log(Level.SEVERE, "Circular dependency detected",e);
       }
-      return taskSet.size();
+      return -1;
    }
    
 }

@@ -122,3 +122,12 @@ end
 task :ShowVariableIgnore do
   puts ENV["ignore_deps"]
 end
+
+# -----------------------------------------------------------------------
+
+task :Circle_A => [:Circle_B]
+task :Circle_B => [:Circle_C]
+task :Circle_C => [:Circle_A]
+
+# -----------------------------------------------------------------------
+
