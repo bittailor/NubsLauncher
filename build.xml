@@ -53,18 +53,18 @@
 		<pathelement location="${target.classes.src}" />
 	</path>
 
-	<target name="revision">
-		<exec outputproperty="svn.revision" executable="svnversion">
-			<arg line="-n -c" />
+	<target name="version">
+		<exec outputproperty="git.version.count" executable="git">
+			<arg line="describe --match VersionCounterStart" />
 			<redirector>
 				<outputfilterchain>
 					<tokenfilter>
-						<replaceregex pattern="^[0-9]*:?" replace="" flags="g" />
+						<replaceregex pattern="^VersionCounterStart-([0-9]*)-.*" replace="200\1" flags="g" />
 					</tokenfilter>
 				</outputfilterchain>
 			</redirector>
 		</exec>
-      <echo message="Revision is ${svn.revision}" />
+      <echo message="Calculated version is ${git.version.count}" />
 	</target>
 
 	<target name="clean" description="clean up">
@@ -165,14 +165,14 @@
 
 	<target name="build" depends="unittest,compile" description="generate the distribution" />
 
-	<target name="release" depends="build,revision" description="generate the distribution">
+	<target name="release" depends="build,version" description="generate the distribution">
 		<mkdir dir="${target.dist}" />
 		<jar destfile="${target.dist}/NubsLauncher.jar">
 			<manifest>
 				<attribute name="Built-By" value="Bittailor.ch" />
 				<attribute name="Main-Class" value="com.netstal.tools.nubs.launcher.application.NubsLauncher" />
 				<attribute name="Class-Path" value="." />
-				<attribute name="Implementation-Version" value="${svn.revision}" />
+				<attribute name="Implementation-Version" value="${git.version.count}" />
 			</manifest>
 			<fileset dir="${target.classes.src}" />
 			<zipfileset excludes="META-INF/*.SF" src="${lib.compile}/guice-2.0.jar" />
