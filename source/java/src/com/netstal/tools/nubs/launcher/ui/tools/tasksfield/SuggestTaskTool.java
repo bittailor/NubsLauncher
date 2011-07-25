@@ -24,21 +24,26 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import com.google.inject.Inject;
+import com.netstal.tools.nubs.launcher.domain.IConfiguration;
 import com.netstal.tools.nubs.launcher.domain.IFilterChain;
 
 public class SuggestTaskTool extends AbstractTool {
 
+   private static final String SUGGEST_POPUP_MINIMAL_WITH = "suggestPopup.MinimalWith";
+
    private static Logger LOG = Logger.getLogger(SuggestTaskTool.class.getName());
    
    private IFilterChain filterChain;
+   private IConfiguration configuration;
    private ListModel suggestListModel;
    private JList suggestList;
    private JPopupMenu suggestPopup;
     
    @Inject
-   public SuggestTaskTool(IFilterChain filterChain) {
+   public SuggestTaskTool(IFilterChain filterChain, IConfiguration configuration) {
       super(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
       this.filterChain = filterChain;
+      this.configuration = configuration;
       suggestListModel = new SuggestListModel(filterChain);
       createUi();       
    }
@@ -149,7 +154,8 @@ public class SuggestTaskTool extends AbstractTool {
       catch (BadLocationException e) {
          LOG.log(Level.WARNING, "Oops, Internal Error", e);
       }
-      suggestPopup.setPreferredSize(new Dimension(getTasksField().getWidth()-x, getTasksField().getHeight()*15));
+      int width = Math.max(getTasksField().getWidth()-x, configuration.getInteger(SUGGEST_POPUP_MINIMAL_WITH)); 
+      suggestPopup.setPreferredSize(new Dimension(width, getTasksField().getHeight()*15));
       suggestPopup.show(getTasksField(), x, getTasksField().getHeight());
       getTasksField().requestFocus();
    }
