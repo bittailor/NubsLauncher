@@ -14,7 +14,6 @@ import org.easymock.IAnswer;
 import org.easymock.IMocksControl;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.Provider;
@@ -31,7 +30,6 @@ import com.netstal.tools.nubs.launcher.infrastructure.StreamUtility;
 import com.netstal.tools.nubs.launcher.infrastructure.StringUtility;
 import com.netstal.tools.nubs.launcher.test.TestUtility;
 
-@Ignore
 public class RakeJobIntegrationTest {
 
    private IMocksControl control;

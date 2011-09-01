@@ -23,7 +23,7 @@
 	<property name="target.dist" location="${target}/build/dist" />
 
 	<property name="deliver.dir" location="s:/Gruppe/TE/Verwaltung/Tools/NUBSLauncher" />
-	
+
 	<property name="install.scripts" location="source/install" />
 
 	<property name="launch4j.dir" location="c:/Programme/Launch4j" />
@@ -64,7 +64,7 @@
 				</outputfilterchain>
 			</redirector>
 		</exec>
-      <echo message="Calculated version is ${git.version.count}" />
+		<echo message="Calculated version is ${git.version.count}" />
 	</target>
 
 	<target name="clean" description="clean up">
@@ -115,14 +115,14 @@
 				<!-- Currently filter UI from coverage -->
 				<filter excludes="com.netstal.tools.nubs.launcher.ui.*" />
 				<filter excludes="com.netstal.tools.nubs.launcher.ui.tools.tasksfield.*" />
-		    </instr>
+			</instr>
 		</emma>
 	</target>
 
-	<target name="unittest" depends="instrument" unless="SkipTest">
+	<target name="unittest" depends="instrument" unless="SkipUnitTest">
 		<mkdir dir="${target.unittest}" />
 
-		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="test.failed">
+		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="unittest.failed" >
 			<classpath>
 				<pathelement path="${target.classes.src.instrument}" />
 				<pathelement path="${target.classes.src}" />
@@ -135,12 +135,43 @@
 			<jvmarg value="-Demma.coverage.out.merge=true" />
 			<batchtest todir="${target.unittest}">
 				<fileset dir="${source.test}">
+					<exclude name="**/*IntegrationTest.java" />
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 			<formatter type="xml" />
 		</junit>
+		
+		<property name="test.results" value="true" />
+		
+	</target>
 
+	<target name="integrationtest" depends="instrument" unless="SkipIntegrationTest">
+		<mkdir dir="${target.unittest}" />
+
+		<junit printsummary="yes" showoutput="no" fork="yes" failureproperty="integrationtest.failed">
+			<classpath>
+				<pathelement path="${target.classes.src.instrument}" />
+				<pathelement path="${target.classes.src}" />
+				<pathelement path="${target.classes.test}" />
+				<path refid="path.libraries.src" />
+				<path refid="path.libraries.test" />
+				<path refid="emma.lib" />
+			</classpath>
+			<jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma" />
+			<jvmarg value="-Demma.coverage.out.merge=true" />
+			<batchtest todir="${target.unittest}">
+				<fileset dir="${source.test}">
+					<include name="**/*IntegrationTest.java" />
+				</fileset>
+			</batchtest>
+			<formatter type="xml" />
+		</junit>
+		
+		<property name="test.results" value="true" />
+	</target>
+
+	<target name="testreport" depends="unittest,integrationtest" if="test.results">
 		<junitreport todir="${target.unittest}">
 			<fileset dir="${target.unittest}">
 				<include name="TEST-*.xml" />
@@ -158,12 +189,16 @@
 			</report>
 		</emma>
 
-		<fail if="test.failed">
-		   Failures in unittests.
+		<fail if="unittest.failed">
+		   Failures in unit tests.
 		</fail>
+		<fail if="integrationtest.failed">
+		   Failures in integration tests.
+		</fail>
+
 	</target>
 
-	<target name="build" depends="unittest,compile" description="generate the distribution" />
+	<target name="build" depends="testreport,compile" description="generate the distribution" />
 
 	<target name="release" depends="build,version" description="generate the distribution">
 		<mkdir dir="${target.dist}" />
@@ -192,9 +227,9 @@
 			</fileset>
 		</copy>
 		<copy todir="${deliver.dir}">
-		  <fileset dir="${install.scripts}">
-		  	<include name="**/*.*"/>
-		  </fileset>
+			<fileset dir="${install.scripts}">
+				<include name="**/*.*"/>
+			</fileset>
 		</copy>
 	</target>
 
