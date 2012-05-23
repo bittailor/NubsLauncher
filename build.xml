@@ -2,6 +2,7 @@
 <project name="NubsLauncher" default="build" basedir=".">
 
 	<!-- set global properties for this build -->
+	<!-- fam was here -->
 
 	<property name="lib" location="lib" />
 	<property name="lib.compile" location="lib/compile" />
